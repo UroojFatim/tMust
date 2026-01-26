@@ -2,10 +2,10 @@
 const nextConfig = {
     images: {
         domains: ["cdn.sanity.io"]
-    },
-    experimental: {
-        appDir: true,
     }
+    // experimental: {
+    //     appDir: true,
+    // }
 }
 
 module.exports = nextConfig

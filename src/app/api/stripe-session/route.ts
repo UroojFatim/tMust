@@ -1,10 +1,11 @@
 import { NextResponse, NextRequest } from "next/server";
 import Stripe from "stripe";
+import { getDatabase } from "../../../lib/mongodb";
 
 const key = process.env.STRIPE_SECRET_KEY || "";
 
 const stripe = new Stripe(key, {
-  apiVersion: "2023-08-16",
+  apiVersion: "2025-02-24.acacia",
 });
 
 export async function POST(request: NextRequest) {
@@ -16,11 +17,19 @@ export async function POST(request: NextRequest) {
         submit_type: "pay",
         mode: "payment",
         payment_method_types: ["card"],
-        billing_address_collection: "auto",
-        shipping_options: [
-          { shipping_rate: "shr_1NkOlPJiiFtN0i2AfQA5k7uS" },
-          { shipping_rate: "shr_1NkOkvJiiFtN0i2AnQRSJ5LP" },
-        ],
+        billing_address_collection: "required",
+        // Shipping disabled - enable when you create shipping rates in your new Stripe account
+        // shipping_address_collection: {
+        //   allowed_countries: ['US', 'CA', 'GB', 'AU'],
+        // },
+        phone_number_collection: {
+          enabled: true,
+        },
+        customer_email: undefined, // Let customer enter email
+        // shipping_options: [
+        //   { shipping_rate: "shr_1NkOlPJiiFtN0i2AfQA5k7uS" },
+        //   { shipping_rate: "shr_1NkOkvJiiFtN0i2AnQRSJ5LP" },
+        // ],
         line_items: body.products.map((item: any) => {
           return {
             price_data: {
@@ -38,7 +47,10 @@ export async function POST(request: NextRequest) {
             },
           };
         }),
-        success_url: `${request.headers.get("origin")}/success`,
+        metadata: {
+          session_user_id: body.session_user_id, // Store session ID for later
+        },
+        success_url: `${request.headers.get("origin")}/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${request.headers.get("origin")}/?canceled=true`,
       });
       return NextResponse.json({ session });

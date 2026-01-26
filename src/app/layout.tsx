@@ -15,11 +15,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Providers>
-          <Header />
+        <CartProvider>
+          <Header></Header>
           <main>{children}</main>
-          <Footer />
-        </Providers>
+          <Footer></Footer>
+        </CartProvider>
       </body>
     </html>
   );

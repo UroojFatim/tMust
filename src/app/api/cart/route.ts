@@ -1,36 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cartColumns, db } from "../../../lib/drizzle";
-import { and, eq } from "drizzle-orm";
+import { getDatabase } from "../../../lib/mongodb";
 
 export const POST = async (request: NextRequest) => {
   const req = await request.json();
   try {
-    const res = await db
-      .insert(cartColumns)
-      .values({
+    if (!req.user_id || !req.product_id) {
+      return NextResponse.json(
+        { message: "user_id and product_id are required" },
+        { status: 400 }
+      );
+    }
+
+    const db = await getDatabase();
+    const cartCollection = db.collection("cart");
+
+    // Update or insert cart item
+    const result = await cartCollection.updateOne(
+      {
         user_id: req.user_id,
         product_id: req.product_id,
-        product_title: req.product_title,
-        image_url: req.image_url,
-        product_category: req.product_category,
-        product_price: req.product_price,
-        product_quantity: req.product_quantity,
-
-      })
-      .onConflictDoUpdate({
-        target: [cartColumns.product_title,cartColumns.user_id],
-        set: {
-          product_quantity: req.product_quantity,
+      },
+      {
+        $set: {
+          user_id: req.user_id,
+          product_id: req.product_id,
+          product_title: req.product_title,
+          image_url: req.image_url,
+          product_category: req.product_category,
           product_price: req.product_price,
+          product_quantity: req.product_quantity,
         },
-      })
-      .returning();
-    console.log("Data Posted To Database");
-    return NextResponse.json({ res });
+      },
+      { upsert: true }
+    );
+
+    console.log("Data Posted To Database", result);
+    return NextResponse.json({ success: true, result });
   } catch (error) {
-    console.log("Error While Posting Data To Database");
-    console.log("error", error);
-    return NextResponse.json({ message: "Something Went Wrong" });
+    console.error("Error While Posting Data To Database", error);
+    return NextResponse.json(
+      { message: "Something Went Wrong", error: String(error) },
+      { status: 500 }
+    );
   }
 };
 
@@ -38,33 +49,65 @@ export const POST = async (request: NextRequest) => {
 export const GET = async (request: NextRequest) => {
   const uid = request.nextUrl.searchParams.get("user_id") as string;
   try {
-    const res = await db
-      .select()
-      .from(cartColumns)
-      .where(eq(cartColumns.user_id, uid));
-    return NextResponse.json(res);
+    if (!uid) {
+      return NextResponse.json(
+        { message: "user_id is required" },
+        { status: 400 }
+      );
+    }
+
+    console.log(`[Cart GET] Fetching cart for user: ${uid}`);
+    const db = await getDatabase();
+    console.log(`[Cart GET] Connected to database`);
+    
+    const cartCollection = db.collection("cart");
+    console.log(`[Cart GET] Got cart collection`);
+    
+    const items = await cartCollection
+      .find({ user_id: uid })
+      .toArray();
+    
+    console.log(`[Cart GET] Fetched ${items.length} items for user ${uid}`, items);
+    return NextResponse.json(items);
   } catch (error) {
-    console.log(error);
-    return NextResponse.json(error);
+    console.error("[Cart GET] Error fetching cart:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json(
+      { 
+        message: "Error fetching cart", 
+        error: errorMessage,
+        details: "Check server logs for more information"
+      },
+      { status: 500 }
+    );
   }
 };
 
 export const DELETE = async (request: NextRequest) => {
   const req = await request.json();
   try {
-    const res = await db
-      .delete(cartColumns)
-      .where(
-        and(
-          eq(cartColumns.user_id, req.user_id),
-          eq(cartColumns.product_title, req.product_title)
-        )
-      )
-      .returning();
-      console.log('Product Successfully Deleted')
-    return NextResponse.json({ message: "Product Successfully Deleted" });
+    if (!req.user_id || !req.product_title) {
+      return NextResponse.json(
+        { message: "user_id and product_title are required" },
+        { status: 400 }
+      );
+    }
+
+    const db = await getDatabase();
+    const cartCollection = db.collection("cart");
+    
+    const result = await cartCollection.deleteOne({
+      user_id: req.user_id,
+      product_title: req.product_title,
+    });
+    
+    console.log("Product Successfully Deleted", result);
+    return NextResponse.json({ message: "Product Successfully Deleted", result });
   } catch (error) {
-    console.log("Error removing item from cart", error);
-    return NextResponse.json({ message: "Error Deleting Product" });
+    console.error("Error removing item from cart", error);
+    return NextResponse.json(
+      { message: "Error Deleting Product", error: String(error) },
+      { status: 500 }
+    );
   }
 };
