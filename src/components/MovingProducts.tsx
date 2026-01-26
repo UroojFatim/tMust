@@ -1,42 +1,124 @@
 /* eslint-disable @next/next/no-async-client-component */
 "use client";
 
-import { useState, useEffect } from "react";
-import ProductCart from "../components/ProductCart";
+import { useEffect, useMemo, useRef, useState } from "react";
+import ProductCard from "@/components/ProductCart";
 import FetchData from "../../sanity/FetchData";
 import Link from "next/link";
 
 export default function MovingProducts() {
-  const [data, setData] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const itemsToShow = 3; // Number of items to show at a time
+  const [data, setData] = useState<any[]>([]);
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  // responsive items count
+  const [itemsToShow, setItemsToShow] = useState(3);
+
+  useEffect(() => {
+    const onResize = () => {
+      const w = window.innerWidth;
+      if (w < 640) setItemsToShow(1);
+      else if (w < 1024) setItemsToShow(2);
+      else setItemsToShow(3);
+    };
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
       const productData = await FetchData();
-      setData(productData);
+      console.log("Fetched products:", productData);
+      setData(productData || []);
     }
-
     fetchData();
   }, []);
 
+  const maxIndex = useMemo(() => {
+    if (!data.length) return 0;
+    return Math.max(0, data.length - itemsToShow);
+  }, [data.length, itemsToShow]);
+
+  // keep index in range when itemsToShow changes
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + itemsToShow) % data.length);
-    }, 3000); // Change products every 3 second
+    setIndex((prev) => Math.min(prev, maxIndex));
+  }, [maxIndex]);
 
-    return () => clearTimeout(timer);
-  }, [currentIndex, data.length, itemsToShow]);
+  useEffect(() => {
+    if (!data.length || paused) return;
+    const t = setInterval(() => {
+      setIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+    }, 3000);
+    return () => clearInterval(t);
+  }, [data.length, paused, maxIndex]);
 
-  const displayedItems = data.slice(currentIndex, currentIndex + itemsToShow);
+  const prev = () => setIndex((p) => (p <= 0 ? maxIndex : p - 1));
+  const next = () => setIndex((p) => (p >= maxIndex ? 0 : p + 1));
+
+  if (!data.length) {
+    return (
+      <div className="py-10 text-center text-gray-500">
+        Loading products...
+      </div>
+    );
+  }
 
   return (
-    <section className="">
-      <div className="flex justify-center items-center flex-col gap-y-6 lg:grid lg:grid-cols-[repeat(3,auto)] lg:gap-x-16 2xl:gap-x-96 ">
-        {displayedItems.map((item: any, index) => (
-          <Link href={`/product/${item.slug.current}`} key={index}>
-            <ProductCart item={item} key={index} />
-          </Link>
+    <section
+      className="relative"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* controls */}
+      <button
+        onClick={prev}
+        className="hidden md:flex items-center justify-center absolute -left-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white shadow-md border hover:scale-105 transition"
+        aria-label="Previous"
+      >
+        ‹
+      </button>
+      <button
+        onClick={next}
+        className="hidden md:flex items-center justify-center absolute -right-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white shadow-md border hover:scale-105 transition"
+        aria-label="Next"
+      >
+        ›
+      </button>
+
+      {/* viewport */}
+      <div className="overflow-hidden">
+        <div
+          className="flex gap-6 transition-transform duration-700 ease-in-out"
+          style={{
+            transform: `translateX(calc(-${index} * (100% / ${itemsToShow})))`,
+          }}
+        >
+          {data.map((item, i) => (
+            <div
+              key={item?._id ?? i}
+              className="shrink-0"
+              style={{ width: `calc(100% / ${itemsToShow})` }}
+            >
+              <Link href={`/product/${item.slug.current}`} className="block">
+                <ProductCard item={item} />
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* dots */}
+      <div className="mt-6 flex justify-center gap-2">
+        {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setIndex(i)}
+            className={`h-2 rounded-full transition-all ${
+              i === index ? "w-8 bg-brand-navy" : "w-2 bg-gray-300"
+            }`}
+            aria-label={`Go to slide ${i + 1}`}
+          />
         ))}
       </div>
     </section>

@@ -1,90 +1,117 @@
-import logo from "/public/DineMarketLogo.webp";
+import logo from "/public/MustLogo.png";
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Search, Menu } from "lucide-react";
-import { Input } from "../ui/input";
 import Wrapper from "../shared/Wrapper";
 import CartButton from "../CartButton";
-import { SignInButton } from "@clerk/nextjs";
-import SignInOrOutButton from "../SignInOrOutButton";
+
+const NAV_ITEMS = [
+  { label: "All", href: "/AllProducts" },
+  { label: "New Arrivals", href: "/category/new_arrivals" },
+  { label: "Best Sellers", href: "/category/best_sellers" },
+  { label: "Casual Wear", href: "/category/casual_wears" },
+  { label: "Formal Wear", href: "/category/formal_wears" },
+  { label: "Fancy / Party Wear", href: "/category/fancy_party_wear" },
+  { label: "Traditional Wear", href: "/category/traditional_wear" },
+];
 
 const Header = () => {
   return (
-    <Wrapper>
-      <div className="flex items-center justify-between py-8 lg:py-8">
-        <div className="hidden lg:flex items-center justify-between flex-auto">
-          <Link href={"../"}>
+    <header className="bg-white border-b border-black/10">
+      <Wrapper>
+        <div className="flex items-center justify-between py-4 lg:py-5">
+          {/* LEFT: Logo */}
+          <Link href="/" className="flex items-center gap-2">
             <Image
-              className="items-center h-6 w-[140px]"
               src={logo}
-              alt="logo"
+              alt="MUST"
+              className="h-12 w-auto object-contain"
+              priority
             />
           </Link>
-          <ul className="flex text-center gap-x-10">
-            <li className="text-lg">
-              <Link href={"/category/female"}>Female</Link>
-            </li>
-            <li className="text-lg">
-              <Link href={"/category/male"}>Male</Link>
-            </li>
-            <li className="text-lg">
-              <Link href={"/category/kids"}>Kids</Link>
-            </li>
-            <li className="text-lg">
-              <Link href={"/AllProducts"}>All Products</Link>
-            </li>
-          </ul>
-          <div className="flex items-center border rounded border-opacity-50">
-            <Search className="lg:h-3 lg:w-3 h-4 w-4 ml-2" />
-            <Input
-              placeholder="What you're looking for"
-              className="border-gray-600 opacity-70 tracking-tighter text-sm align-middle"
-            />
+
+          {/* CENTER: Nav (Desktop) */}
+          <nav className="hidden lg:flex flex-1 justify-center">
+            <ul className="flex items-center gap-x-10 text-[15px] font-medium text-black">
+              {NAV_ITEMS.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="hover:text-brand-navy transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* RIGHT: Icons */}
+          <div className="hidden lg:flex items-center gap-5">
+            {/* Search Icon (you can link to a search page or open a modal later) */}
+            <Link
+              href="/search"
+              aria-label="Search"
+              className="p-2 rounded-full hover:bg-sky-50 transition"
+            >
+              <Search className="h-5 w-5 text-[#0B1B3A]" />
+            </Link>
+
+            {/* Cart */}
+            <div className="relative h-10 w-10 rounded-full flex justify-center items-center bg-sky-50 hover:bg-sky-100 transition">
+              <CartButton />
+            </div>
           </div>
-          <div className="relative h-11 w-11 rounded-full flex justify-center items-center bg-gray-200 hover:scale-125 transition">
-            <CartButton></CartButton>
-          </div>
-          <SignInOrOutButton />
-        </div>
-        <div className="lg:hidden flex flex-auto justify-between">
-          <Image className="items-center h-6 w-[140px]" src={logo} alt="logo" />
-          <Sheet>
-            <SheetTrigger>
-              <Menu className="h-7 w-7" />
-            </SheetTrigger>
-            <SheetContent>
-              <Image
-                className="items-center h-6 w-[140px] flex my-6 mx-5"
-                src={logo}
-                alt="logo"
-              />
-              <div className="flex flex-col items-center mt-20">
-                <CartButton></CartButton>
-                <ul className="flex text-center bg-white gap-y-3 mt-5 gap-x-8 flex-col items-center">
-                  <li className="text-lg">
-                    <Link href={"/category/Female"}>Female</Link>
-                  </li>
-                  <li className="text-lg">
-                    <Link href={"/category/Male"}>Male</Link>
-                  </li>
-                  <li className="text-lg">
-                    <Link href={"/category/Kids"}>Kids</Link>
-                  </li>
-                  <li className="text-lg">
-                    <Link href={"/AllProducts"}>All Products</Link>
-                  </li>
-                  <li className="text-lg">
-                    <SignInOrOutButton />
-                  </li>
+
+          {/* MOBILE: Logo + Menu */}
+          <div className="lg:hidden flex items-center gap-3">
+            <Link
+              href="/search"
+              aria-label="Search"
+              className="p-2 rounded-full hover:bg-sky-50 transition"
+            >
+              <Search className="h-5 w-5 text-[#0B1B3A]" />
+            </Link>
+
+            <div className="relative h-10 w-10 rounded-full flex justify-center items-center bg-sky-50">
+              <CartButton />
+            </div>
+
+            <Sheet>
+              <SheetTrigger aria-label="Open menu">
+                <Menu className="h-7 w-7 text-[#0B1B3A]" />
+              </SheetTrigger>
+
+              <SheetContent className="bg-white">
+                <div className="flex items-center gap-2 mt-2">
+                  <Image
+                    src={logo}
+                    alt="MUST"
+                    className="h-7 w-auto object-contain"
+                    priority
+                  />
+                </div>
+
+                <ul className="mt-10 flex flex-col gap-4 text-base font-medium text-black">
+                  {NAV_ITEMS.map((item) => (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        className="block py-2 hover:text-sky-600 transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
-              </div>
-            </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
-      </div>
-    </Wrapper>
+      </Wrapper>
+    </header>
   );
 };
 
