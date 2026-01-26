@@ -10,7 +10,7 @@ export default async function Home() {
         <Hero></Hero>
         <Promotions></Promotions>
         <ProductList></ProductList>
-        <DifferentFromOthers></DifferentFromOthers>
+        {/* <DifferentFromOthers></DifferentFromOthers> */}
         <Newsletter></Newsletter>
     </section>
   );
