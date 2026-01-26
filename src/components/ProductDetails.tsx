@@ -3,8 +3,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import "react-toastify/dist/ReactToastify.css";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
@@ -14,11 +12,26 @@ import Image from "next/image";
 
 const ProductDetails = ({ foundData }: { foundData: any }) => {
   const [num, setNum] = useState(1);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { setCartItemCount, userId } = useCart();
   const [showNotification, setShowNotification] = useState(false);
   const sizes = ["XS", "S", "M", "L", "XL"];
 
   const handleAddToCart = async () => {
+    if (!selectedSize) {
+      toast.error("Please select a size!", {
+        autoClose: 3000,
+        position: "top-center",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
+
+    setIsLoading(true);
     try {
       const res = await fetch("/api/cart", {
         method: "POST",
@@ -28,6 +41,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
           product_title: foundData?.title,
           product_price: foundData?.price ? foundData.price * num : 0,
           product_quantity: num,
+          product_size: selectedSize,
           image_url: urlForImage(foundData.images[0].asset).url(),
           product_category: foundData?.category,
         }),
@@ -40,7 +54,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
       // Use toast to show a notification
       toast.success("Product added to cart!", {
         autoClose: 3000, // Close the notification after 3 seconds
-        position: toast.POSITION.TOP_CENTER,
+        position: "top-center",
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -52,7 +66,17 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
         setShowNotification(false);
       }, 3000);
     } catch (error) {
+      toast.error("Failed to add product to cart!", {
+        autoClose: 3000,
+        position: "top-center",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -96,14 +120,28 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
                 {foundData.title}
               </h1>
               <h2 className="text-lg text-gray-500 font-semibold opacity-50">
-                {foundData.category}
+                {foundData.category
+                  .replace(/_/g, ' ')
+                  .split(' ')
+                  .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(' ')}
               </h2>
               <h3 className="font-bold mt-6">SELECT SIZE</h3>
-              <span className="flex font-bold justify-between ml-4 mt-5 text-gray-800 opacity-80">
+              <div className="flex font-bold gap-x-4 mt-5 text-gray-800 gap-2">
                 {sizes.map((size) => (
-                  <button key={size}>{size}</button>
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`px-4 py-2 border-2 rounded transition-all ${
+                      selectedSize === size
+                        ? "bg-[#212121] text-white border-[#212121]"
+                        : "bg-white text-gray-800 border-gray-300 hover:border-[#212121]"
+                    }`}
+                  >
+                    {size}
+                  </button>
                 ))}
-              </span>
+              </div>
               <div className="flex align-middle mt-10">
                 <h3 className="font-bold mr-6">Quantity: </h3>
                 <section className="flex items-center gap-x-2">
@@ -129,10 +167,11 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
               <div className="flex mt-8 gap-x-5 items-center">
                 <Button
                   onClick={handleAddToCart}
-                  className=" bg-[#212121] text-white font-bold py-6 px-30 gap-x-3 text-sm w-[45%] border-2  border-solid shadow-md lg:max-w-[250px]"
+                  disabled={isLoading}
+                  className=" bg-[#212121] text-white font-bold py-6 px-30 gap-x-3 text-sm w-[45%] border-2  border-solid shadow-md lg:max-w-[250px] disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   <ShoppingCart className="h-6 w-6" color="#ffffff" />
-                  <div>Add to Cart</div>
+                  <div>{isLoading ? "Adding..." : "Add to Cart"}</div>
                 </Button>
                 <ToastContainer />
                 {/* {showNotification && (

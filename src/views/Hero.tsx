@@ -35,7 +35,7 @@ const Hero = () => {
           </div>
           <div>
             <Link href={"/AllProducts"}>
-              <Button className=" mt-9 bg-brand-navy 2xl:text-lg text-white font-bold py-6 px-20 md:py-7 md:px-[40px] 2xl:py-7 2xl:px-[100px] gap-x-3 lg:max-w-[160px] 2xl:max-w-[700px] border-none rounded-xl ">
+              <Button className=" mt-9 bg-brand-navy 2xl:text-lg text-white font-bold py-6 px-20 md:py-7 md:px-[40px] 2xl:py-7 gap-x-3 border-none rounded-xl ">
                 <div>
                   <ShoppingCart
                     className="2xl:h-7 2xl:w-7 h-6 w-6"
