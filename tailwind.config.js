@@ -24,14 +24,14 @@ module.exports = {
         "200": "2.00",
       },
 
-      // ✅ THEME COLORS ADDED HERE
+      // THEME COLORS ADDED HERE
       colors: {
         // existing custom colors
         pink: "#ffece3",
         paragraph: "#212121",
         grey: "#666",
 
-        // ✅ MUST Brand Theme
+        // MUST Brand Theme
         brand: {
           navy: "#3182CE",   // dark blue#41667d
           sky: "#D1ECFE",    // sky blue

@@ -34,6 +34,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setUserId(sessionUserId);
   }, []);
 
+  // Load cart count from localStorage on mount
+  useEffect(() => {
+    const savedCartCount = localStorage.getItem('cartItemCount');
+    if (savedCartCount) {
+      setCartItemCount(parseInt(savedCartCount, 10));
+    }
+  }, []);
+
+  // Save cart count to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('cartItemCount', cartItemCount.toString());
+  }, [cartItemCount]);
+
   return (
     <CartContext.Provider value={{ cartItemCount, setCartItemCount, cartItems, setCartItems, userId }}>
       {children}

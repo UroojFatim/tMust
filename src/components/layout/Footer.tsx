@@ -10,7 +10,7 @@ const Footer = () => {
         {/* Left Div */}
         <div className="basis-1/3 space-y-10 lg:space-y-8">
           <Image className="scale-135 ml-6 h-12 w-12" src={logo} alt="logo" />
-          <p className="text-paragraph w-52 lg:w-72 xl:w-96 2xl:w-[800px] lg:text-lg">
+          <p className="text-paragraph w-52 lg:w-72 xl:w-96 2xl:w-[750px] lg:text-lg">
             Small, artisan label that offers a thoughtfully curated collection
             of high quality everyday essentials made.
           </p>
@@ -67,7 +67,7 @@ const Footer = () => {
       <div className="border-brand-navy border-t-[0.75px] w-full"></div>
 
       {/* Bottom */}
-      <div className="flex lg:flex-row flex-col gap-y-6 gap-x-72 2xl:gap-x-[600px] text-[#666] my-4 lg:my-6 mx-4 px-4 md:mx-16 md:px-16 xl:mx-16 xl:px-16">
+      <div className="flex lg:flex-row flex-col gap-y-6 gap-x-72 text-[#666] my-4 lg:my-6 mx-4 px-4 md:mx-16 md:px-16 xl:mx-16 xl:px-16">
         <div className="text-base lg:text-2xl xl:text-base">
           Copyright © 2026 Must. All Rights Reserved.
         </div>

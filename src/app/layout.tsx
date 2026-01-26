@@ -2,16 +2,23 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import Providers from "./providers";
+import { CartProvider } from "@/components/CartContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "E-Commerce Website",
-  description: "Created by Adnan",
+  title: "TMUST",
+  description: "An E-Commerce Store",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body className={inter.className}>
@@ -23,4 +30,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </body>
     </html>
   );
-} 
+}

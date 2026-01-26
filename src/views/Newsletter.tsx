@@ -7,7 +7,7 @@ const Newsletter = () => {
   return (
     <Wrapper>
       <section className="text-center relative mt-28 xl:py-20">
-        <h1 className="mt-12 lg:mt-1 xl:mt-2 lg:left-28 xl:left-64 2xl:left-[49rem] absolute font-extrabold text-[66px] lg:text-[8rem] leading-[151px] text-paragraph opacity-[0.08] z-10">
+        <h1 className="mt-12 lg:mt-1 xl:mt-2 w-full mx-auto absolute font-extrabold text-[66px] lg:text-[8rem] leading-[151px] text-paragraph opacity-[0.08] z-10">
           Newsletter
         </h1>
         <h2 className="font-bold text-3xl lg:text-4xl">
