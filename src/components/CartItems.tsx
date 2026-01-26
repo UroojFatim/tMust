@@ -7,45 +7,92 @@ import React, { useEffect, useState } from "react";
 import Wrapper from "@/components/shared/Wrapper";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, Trash2 } from "lucide-react";
-import { useAuth } from "@clerk/nextjs";
+import { useCart } from "@/components/CartContext";
 
 export default function CartItems() {
-  const [products, setProducts] = useState<any>(null);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [state, setState] = useState(false);
-  const { isSignedIn } = useAuth();
-  const { userId } = useAuth();
+  const { userId } = useCart();
   const [quantities, setQuantities] = useState<{ [productId: string]: number }>(
     {}
   );
 
   useEffect(() => {
-    fetch(`api/cart?user_id=${userId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setProducts(data);
+    if (userId) {
+      setLoading(true);
+      fetch(`/api/cart?user_id=${userId}`)
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`API error: ${res.status} ${res.statusText}`);
+          }
+          return res.json();
+        })
+        .then((data) => {
+          console.log("Cart data fetched:", data);
+          const cartItems = Array.isArray(data) ? data : [];
+          setProducts(cartItems);
 
-        // Initialize quantities state with fetched data
-        const initialQuantities: { [productId: string]: number } = {};
-        data.forEach((item: any) => {
-          initialQuantities[item.product_id] = item.product_quantity;
+          // Initialize quantities state with fetched data
+          const initialQuantities: { [productId: string]: number } = {};
+          cartItems.forEach((item: any) => {
+            initialQuantities[item.product_id] = item.product_quantity;
+          });
+          setQuantities(initialQuantities);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching cart:", error);
+          setProducts([]);
+          setLoading(false);
         });
-        setQuantities(initialQuantities);
-      });
-  }, [isSignedIn, userId, state]);
+    } else {
+      setLoading(false);
+    }
+  }, [userId, state]);
 
   const handleCheckout = async () => {
-    const stripePromise = await getStripePromise();
-    const response = await fetch("api/stripe-session/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      cache: "no-cache",
-      body: JSON.stringify({
-        products: products,
-      }),
-    });
-    const data = await response.json();
-    if (data.session) {
-      stripePromise?.redirectToCheckout({ sessionId: data.session.id });
+    try {
+      const stripePromise = await getStripePromise();
+      
+      if (!stripePromise) {
+        console.error(
+          "❌ Stripe not initialized. Check NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY in .env.local"
+        );
+        alert(
+          "Payment system not configured. Please add valid Stripe keys to .env.local"
+        );
+        return;
+      }
+
+      console.log("[Checkout] Creating Stripe session...");
+      const response = await fetch("/api/stripe-session/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-cache",
+        body: JSON.stringify({
+          products: products,
+          session_user_id: userId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("[Checkout] Stripe session response:", data);
+
+      if (data.session?.id) {
+        console.log("[Checkout] Redirecting to Stripe checkout...");
+        await stripePromise.redirectToCheckout({ sessionId: data.session.id });
+      } else {
+        console.error("[Checkout] No session ID in response:", data);
+        alert("Failed to create checkout session. Please try again.");
+      }
+    } catch (error) {
+      console.error("[Checkout] Error:", error);
+      alert(`Checkout error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
 
@@ -64,13 +111,13 @@ export default function CartItems() {
   let totalQuantity = 0;
   let totalSubtotal = 0;
 
-  if (products) {
+  if (products && Array.isArray(products) && products.length > 0) {
     totalQuantity = Object.values(quantities).reduce(
       (acc, curr) => acc + curr,
       0
     );
-    console.log("Quantities:", products);
-    totalSubtotal = products?.reduce(
+    console.log("Cart products:", products);
+    totalSubtotal = products.reduce(
       (
         acc: number,
         item: {
@@ -91,86 +138,87 @@ export default function CartItems() {
     <Wrapper>
       <section className="px-12 my-16">
         <h1 className="font-bold text-2xl">Shopping Cart</h1>
-        {totalQuantity != 0 ? (
+        
+        {loading ? (
+          <div className="flex-col items-center flex mt-12">
+            <p className="font-bold text-2xl">Loading cart...</p>
+          </div>
+        ) : products.length > 0 ? (
           <div className=" flex mt-2 gap-x-10">
             {/* Cart Items */}
 
             <div className="basis-[70%]">
-              {isSignedIn ? (
-                <div>
-                  {products?.map((item: any) => (
-                    <div className=" flex p-7 gap-x-8">
-                      <div className=" h-48 w-44 ">
-                        <Image
-                          src={item.image_url} // Use the image URL here
-                          height={500}
-                          width={400}
-                          className="h-full w-full object-cover rounded-lg"
-                          alt={item.product_title}
-                        />
+              <div>
+                {products.map((item: any) => (
+                  <div className=" flex p-7 gap-x-8" key={item.product_id}>
+                    <div className=" h-48 w-44 ">
+                      <Image
+                        src={item.image_url}
+                        height={500}
+                        width={400}
+                        className="h-full w-full object-cover rounded-lg"
+                        alt={item.product_title}
+                      />
+                    </div>
+                    <div className="font-bold w-full ">
+                      <div className="text-xl font-light flex items-center justify-between">
+                        <span>{item.product_title}</span>
+                        <button
+                          onClick={() => deleteProduct(item.product_title)}
+                        >
+                          <Trash2 />
+                        </button>
                       </div>
-                      <div className="font-bold w-full ">
-                        <div className="text-xl font-light flex items-center justify-between">
-                          <span>{item.product_title}</span>
-                          <button
-                            onClick={() => deleteProduct(item.product_title)}
-                          >
-                            <Trash2 />
-                          </button>
-                        </div>
-                        <h2 className="mt-5 text-gray-500">
-                          {item.product_category}
-                        </h2>
-                        <div className="mt-4">Delivery Estimation</div>
-                        <div className="mt-4 text-yellow-400">
-                          5 Working Days
-                        </div>
-                        <div className="mt-4 text-lg flex items-center justify-between">
-                          <span>
-                            $
-                            {(item.product_price / item.product_quantity) *
-                              (quantities[item.product_id] || 1)}
-                          </span>
-                          <div className="font-light">
-                            <section className="flex items-center gap-x-2">
-                              <div
-                                className="border rounded-full h-8 w-8 text-center bg-slate-200 text-2xl cursor-pointer"
-                                onClick={() => {
-                                  const newQuantity =
-                                    (quantities[item.product_id] || 1) - 1;
-                                  setQuantities((prevQuantities) => ({
-                                    ...prevQuantities,
-                                    [item.product_id]:
-                                      newQuantity >= 1 ? newQuantity : 1,
-                                  }));
-                                }}
-                              >
-                                -
-                              </div>
-                              <span>{quantities[item.product_id] || 1}</span>
-                              <div
-                                className="border rounded-full h-8 w-8 text-center bg-slate-200 text-xl cursor-pointer"
-                                onClick={() => {
-                                  const newQuantity =
-                                    (quantities[item.product_id] || 1) + 1;
-                                  setQuantities((prevQuantities) => ({
-                                    ...prevQuantities,
-                                    [item.product_id]: newQuantity,
-                                  }));
-                                }}
-                              >
-                                +
-                              </div>
-                            </section>
-                          </div>
+                      <h2 className="mt-5 text-gray-500">
+                        {item.product_category}
+                      </h2>
+                      <div className="mt-4">Delivery Estimation</div>
+                      <div className="mt-4 text-yellow-400">
+                        5 Working Days
+                      </div>
+                      <div className="mt-4 text-lg flex items-center justify-between">
+                        <span>
+                          $
+                          {(item.product_price / item.product_quantity) *
+                            (quantities[item.product_id] || 1)}
+                        </span>
+                        <div className="font-light">
+                          <section className="flex items-center gap-x-2">
+                            <div
+                              className="border rounded-full h-8 w-8 text-center bg-slate-200 text-2xl cursor-pointer"
+                              onClick={() => {
+                                const newQuantity =
+                                  (quantities[item.product_id] || 1) - 1;
+                                setQuantities((prevQuantities) => ({
+                                  ...prevQuantities,
+                                  [item.product_id]:
+                                    newQuantity >= 1 ? newQuantity : 1,
+                                }));
+                              }}
+                            >
+                              -
+                            </div>
+                            <span>{quantities[item.product_id] || 1}</span>
+                            <div
+                              className="border rounded-full h-8 w-8 text-center bg-slate-200 text-xl cursor-pointer"
+                              onClick={() => {
+                                const newQuantity =
+                                  (quantities[item.product_id] || 1) + 1;
+                                setQuantities((prevQuantities) => ({
+                                  ...prevQuantities,
+                                  [item.product_id]: newQuantity,
+                                }));
+                              }}
+                            >
+                              +
+                            </div>
+                          </section>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p>Please Login In</p>
-              )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Order Summary */}

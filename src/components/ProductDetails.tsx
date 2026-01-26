@@ -2,76 +2,58 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react-hooks/rules-of-hooks */
 "use client";
-import { useUser } from "@clerk/clerk-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "react-toastify/dist/ReactToastify.css";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/components/CartContext";
 import { urlForImage } from "../../sanity/lib/image";
 import Image from "next/image";
-import Quantity from "./Quantity";
-import { useAuth } from "@clerk/nextjs";
 
 const ProductDetails = ({ foundData }: { foundData: any }) => {
   const [num, setNum] = useState(1);
-  const { setCartItemCount } = useCart();
+  const { setCartItemCount, userId } = useCart();
   const [showNotification, setShowNotification] = useState(false);
   const sizes = ["XS", "S", "M", "L", "XL"];
-  const { userId } = useAuth();
-  const { isSignedIn } = useUser();
 
   const handleAddToCart = async () => {
-    // if (!isSignedIn) {
-    //   // If user is not signed in, show an error toast
-    //   toast.error("You must be signed in to add products to the cart.", {
-    //     position: "top-center",
-    //     autoClose: 5000,
-    //     hideProgressBar: false,
-    //     closeOnClick: true,
-    //     pauseOnHover: true,
-    //     draggable: true,
-    //     progress: undefined,
-    //   });
-    // } else {
-      try {
-        const res = await fetch("/api/cart", {
-          method: "POST",
-          body: JSON.stringify({
-            user_id: userId,
-            product_id: foundData?._id,
-            product_title: foundData?.title,
-            product_price: foundData?.price ? foundData.price * num : 0,
-            product_quantity: num,
-            image_url: urlForImage(foundData.images[0].asset).url(),
-            product_category: foundData?.category,
-          }),
-        });
+    try {
+      const res = await fetch("/api/cart", {
+        method: "POST",
+        body: JSON.stringify({
+          user_id: userId,
+          product_id: foundData?._id,
+          product_title: foundData?.title,
+          product_price: foundData?.price ? foundData.price * num : 0,
+          product_quantity: num,
+          image_url: urlForImage(foundData.images[0].asset).url(),
+          product_category: foundData?.category,
+        }),
+      });
 
-        // Update the cart item count
-        setCartItemCount((prevCount: number) => prevCount + 1);
-        setShowNotification(true);
+      // Update the cart item count
+      setCartItemCount((prevCount: number) => prevCount + 1);
+      setShowNotification(true);
 
-        // Use toast to show a notification
-        toast.success("Product added to cart!", {
-          autoClose: 3000, // Close the notification after 3 seconds
-          position: toast.POSITION.TOP_CENTER,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
+      // Use toast to show a notification
+      toast.success("Product added to cart!", {
+        autoClose: 3000, // Close the notification after 3 seconds
+        position: toast.POSITION.TOP_CENTER,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
 
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 3000);
-      } catch (error) {
-        console.log(error);
-      }
-    // }
+      setTimeout(() => {
+        setShowNotification(false);
+      }, 3000);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -82,12 +64,12 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
           <div className="flex">
             {/* 1st Div */}
             <div className="grid grid-cols-1 mr-8">
-              {foundData.images.map((_imageObj: any) => {
+              {foundData.images.map((_imageObj: any, index: number) => {
                 return (
                   <Image
-                    key={_imageObj.asset.id}
+                    key={_imageObj.asset._id || index}
                     src={urlForImage(_imageObj.asset).url()}
-                    alt={_imageObj.alt}
+                    alt={_imageObj.alt || foundData.title || "Product image"}
                     width={100}
                     height={100}
                   />

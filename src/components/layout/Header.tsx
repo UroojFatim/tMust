@@ -7,8 +7,6 @@ import { Search, Menu } from "lucide-react";
 import { Input } from "../ui/input";
 import Wrapper from "../shared/Wrapper";
 import CartButton from "../CartButton";
-import { SignInButton } from "@clerk/nextjs";
-import SignInOrOutButton from "../SignInOrOutButton";
 
 const Header = () => {
   return (
@@ -46,7 +44,6 @@ const Header = () => {
           <div className="relative h-11 w-11 rounded-full flex justify-center items-center bg-gray-200 hover:scale-125 transition">
             <CartButton></CartButton>
           </div>
-          <SignInOrOutButton />
         </div>
         <div className="lg:hidden flex flex-auto justify-between">
           <Image className="items-center h-6 w-[140px]" src={logo} alt="logo" />
@@ -74,9 +71,6 @@ const Header = () => {
                   </li>
                   <li className="text-lg">
                     <Link href={"/AllProducts"}>All Products</Link>
-                  </li>
-                  <li className="text-lg">
-                    <SignInOrOutButton />
                   </li>
                 </ul>
               </div>
