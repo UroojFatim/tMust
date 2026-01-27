@@ -35,13 +35,17 @@ export async function POST(request: NextRequest) {
           const rowKey = item.row_key || `${item.product_id}__${item.product_size || "no-size"}__${item.product_color || "no-color"}`;
           const currentQuantity = body.quantities?.[rowKey] ?? item.product_quantity ?? 1;
           
-          // ✅ Calculate unit price from database stored price and quantity
-          const unitPrice = item.product_quantity && item.product_quantity > 0
-            ? item.product_price / item.product_quantity
-            : item.product_price;
+          // ✅ Get unit price from various possible fields
+          // Database stores it as 'unit_price', may also be 'product_price'
+          const rawPrice = item.unit_price ?? item.product_price ?? item.price ?? 0;
+          const unitPrice = Number(rawPrice);
+          
+          if (isNaN(unitPrice) || unitPrice <= 0) {
+            throw new Error(`Invalid price for product ${item.product_id}: ${rawPrice}`);
+          }
           
           // ✅ Build product name with size and color info
-          let productName = item.product_title;
+          let productName = item.product_title || "Product";
           const size = item.product_size || item.size;
           const color = item.product_color || item.color;
           
@@ -60,7 +64,7 @@ export async function POST(request: NextRequest) {
                 name: productName,
               },
             },
-            quantity: currentQuantity,
+            quantity: Math.max(1, Math.round(currentQuantity)),
             adjustable_quantity: {
               enabled: true,
               minimum: 1,
@@ -83,6 +87,10 @@ export async function POST(request: NextRequest) {
       });
     }
   } catch (err: any) {
-    return NextResponse.json(err.message);
+    console.error("Stripe session error:", err);
+    return NextResponse.json(
+      { error: { message: err.message || "Failed to create checkout session" } },
+      { status: 400 }
+    );
   }
 }
