@@ -5,6 +5,7 @@ import getStripePromise from "@/lib/stripe";
 import Image from "next/image";
 import React, { useEffect, useMemo, useState } from "react";
 import Wrapper from "@/components/shared/Wrapper";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, Trash2 } from "lucide-react";
 import { useCart } from "@/components/CartContext";
@@ -40,6 +41,7 @@ type CartItem = {
 export default function CartItems() {
   const [products, setProducts] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [state, setState] = useState(false);
 
   const { userId, refreshCart } = useCart();
@@ -99,28 +101,49 @@ export default function CartItems() {
   }, [userId, state]);
 
   const handleCheckout = async () => {
-    const stripePromise = await getStripePromise();
-    if (!stripePromise) {
-      alert("Payment system not configured. Please add valid Stripe keys to .env.local");
-      return;
-    }
+    try {
+      setCheckoutLoading(true);
+      
+      const stripePromise = await getStripePromise();
+      if (!stripePromise) {
+        alert("Payment system not configured. Please add valid Stripe keys to .env");
+        setCheckoutLoading(false);
+        return;
+      }
 
-    const response = await fetch("/api/stripe-session/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      cache: "no-cache",
-      body: JSON.stringify({
-        products,
-        session_user_id: userId,
-        quantities,
-      }),
-    });
+      console.log("Sending checkout request with products:", products);
+      const response = await fetch("/api/stripe-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-cache",
+        body: JSON.stringify({
+          products,
+          session_user_id: userId,
+          quantities,
+        }),
+      });
 
-    if (!response.ok) throw new Error(`API error: ${response.status}`);
-    const data = await response.json();
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("API error response:", errorText);
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
 
-    if (data.session?.id) {
-      await stripePromise.redirectToCheckout({ sessionId: data.session.id });
+      const data = await response.json();
+      console.log("Stripe session response:", data);
+
+      if (data.session?.id) {
+        console.log("Redirecting to Stripe checkout with session:", data.session.id);
+        await stripePromise.redirectToCheckout({ sessionId: data.session.id });
+      } else if (data.error) {
+        throw new Error(data.error.message || "Failed to create checkout session");
+      } else {
+        throw new Error("No session ID returned from server");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert(`Checkout failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+      setCheckoutLoading(false);
     }
   };
 
@@ -163,8 +186,8 @@ export default function CartItems() {
         <h1 className="font-bold text-2xl">Shopping Cart</h1>
 
         {loading ? (
-          <div className="flex-col items-center flex mt-12">
-            <p className="font-bold text-2xl">Loading cart...</p>
+          <div className="mt-12">
+            <LoadingSpinner />
           </div>
         ) : products.length > 0 ? (
           <div className="flex mt-2 gap-x-10">
@@ -287,8 +310,12 @@ export default function CartItems() {
               <div className="text-lg flex">Quantity: {totalQuantity} Products</div>
               <div className="text-lg">Sub Total: ${totalSubtotal.toFixed(2)}</div>
 
-              <Button onClick={handleCheckout} className="text-white w-full py-3">
-                Proceed To Checkout
+              <Button 
+                onClick={handleCheckout} 
+                disabled={checkoutLoading}
+                className="text-white w-full py-3"
+              >
+                {checkoutLoading ? "Processing..." : "Proceed To Checkout"}
               </Button>
             </div>
           </div>

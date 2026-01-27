@@ -23,7 +23,9 @@ export default async function Page({ params }: { params: Promise<{ category: str
 
   return (
     <Wrapper>
-      <AllProductsClient products={filtered} />
+      <section className="py-8">
+        <AllProductsClient products={filtered} />
+      </section>
     </Wrapper>
   );
 }
