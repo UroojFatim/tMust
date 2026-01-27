@@ -2,11 +2,11 @@
 module.exports = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
-	],
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   theme: {
     container: {
       center: true,
@@ -17,16 +17,31 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        'PT_Serif': ['PT Serif'],
+        PT_Serif: ["PT Serif"],
       },
       scale: {
-        '135': '1.35',
-        '200': '2.00',
+        "135": "1.35",
+        "200": "2.00",
       },
+
+      // THEME COLORS ADDED HERE
       colors: {
+        // existing custom colors
         pink: "#ffece3",
         paragraph: "#212121",
         grey: "#666",
+
+        // MUST Brand Theme
+        brand: {
+          navy: "#3182CE",   // dark blue#41667d
+          sky: "#D1ECFE",    // sky blue
+          sky_dark: "#A0D8FC", // darker sky blue
+          black: "#0B0B0B",
+          white: "#FFFFFF",
+          sky_light: "#F3FAFF",
+        },
+
+        // shadcn/ui token colors (keep as-is)
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -61,11 +76,11 @@ module.exports = {
           foreground: "hsl(var(--card-foreground))",
         },
       },
+
       borderRadius: {
-        // lg: "var(--radius)",
-        // md: "calc(var(--radius) - 2px)",
-        // sm: "calc(var(--radius) - 4px)",
+        // keep empty if you don’t want shadcn radius tokens
       },
+
       keyframes: {
         "accordion-down": {
           from: { height: 0 },
@@ -83,4 +98,4 @@ module.exports = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-}
+};

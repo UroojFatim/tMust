@@ -23,7 +23,6 @@ interface IProduct {
   price: number;
   images: IProductImage[];
   category: string;
-  gender: string;
 }
 
 export async function generateStaticParams() {

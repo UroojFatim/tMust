@@ -3,12 +3,15 @@ import { Inter } from "next/font/google";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { CartProvider } from "@/components/CartContext";
+
 const inter = Inter({ subsets: ["latin"] });
-import {ClerkProvider} from "@clerk/nextjs";
 
 export const metadata = {
-  title: "E-Commerce Website",
-  description: "Created by Adnan",
+  title: "TMUST",
+  description: "An E-Commerce Store",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
@@ -17,16 +20,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className={inter.className}>
-          <CartProvider>
-            <Header></Header>
-            <main>{children}</main>
-            <Footer></Footer>
-          </CartProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en">
+      <body className={inter.className}>
+        <CartProvider>
+          <Header></Header>
+          <main>{children}</main>
+          <Footer></Footer>
+        </CartProvider>
+      </body>
+    </html>
   );
 }

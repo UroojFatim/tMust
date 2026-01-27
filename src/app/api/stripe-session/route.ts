@@ -1,10 +1,11 @@
 import { NextResponse, NextRequest } from "next/server";
 import Stripe from "stripe";
+import { getDatabase } from "../../../lib/mongodb";
 
 const key = process.env.STRIPE_SECRET_KEY || "";
 
 const stripe = new Stripe(key, {
-  apiVersion: "2023-08-16",
+  apiVersion: "2025-02-24.acacia",
 });
 
 export async function POST(request: NextRequest) {
@@ -16,21 +17,50 @@ export async function POST(request: NextRequest) {
         submit_type: "pay",
         mode: "payment",
         payment_method_types: ["card"],
-        billing_address_collection: "auto",
-        shipping_options: [
-          { shipping_rate: "shr_1NkOlPJiiFtN0i2AfQA5k7uS" },
-          { shipping_rate: "shr_1NkOkvJiiFtN0i2AnQRSJ5LP" },
-        ],
+        billing_address_collection: "required",
+        // Shipping disabled - enable when you create shipping rates in your new Stripe account
+        // shipping_address_collection: {
+        //   allowed_countries: ['US', 'CA', 'GB', 'AU'],
+        // },
+        phone_number_collection: {
+          enabled: true,
+        },
+        customer_email: undefined, // Let customer enter email
+        // shipping_options: [
+        //   { shipping_rate: "shr_1NkOlPJiiFtN0i2AfQA5k7uS" },
+        //   { shipping_rate: "shr_1NkOkvJiiFtN0i2AnQRSJ5LP" },
+        // ],
         line_items: body.products.map((item: any) => {
+          // ✅ Get current quantity from quantities object using row_key
+          const rowKey = item.row_key || `${item.product_id}__${item.product_size || "no-size"}__${item.product_color || "no-color"}`;
+          const currentQuantity = body.quantities?.[rowKey] ?? item.product_quantity ?? 1;
+          
+          // ✅ Calculate unit price from database stored price and quantity
+          const unitPrice = item.product_quantity && item.product_quantity > 0
+            ? item.product_price / item.product_quantity
+            : item.product_price;
+          
+          // ✅ Build product name with size and color info
+          let productName = item.product_title;
+          const size = item.product_size || item.size;
+          const color = item.product_color || item.color;
+          
+          if (size || color) {
+            productName += " - ";
+            if (size) productName += `Size: ${size}`;
+            if (size && color) productName += ", ";
+            if (color) productName += `Color: ${color}`;
+          }
+
           return {
             price_data: {
               currency: "usd",
-              unit_amount: (item.product_price * 100) / item.product_quantity,
+              unit_amount: Math.round(unitPrice * 100),
               product_data: {
-                name: item.product_title,
+                name: productName,
               },
             },
-            quantity: item.product_quantity,
+            quantity: currentQuantity,
             adjustable_quantity: {
               enabled: true,
               minimum: 1,
@@ -38,7 +68,10 @@ export async function POST(request: NextRequest) {
             },
           };
         }),
-        success_url: `${request.headers.get("origin")}/success`,
+        metadata: {
+          session_user_id: body.session_user_id, // Store session ID for later
+        },
+        success_url: `${request.headers.get("origin")}/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${request.headers.get("origin")}/?canceled=true`,
       });
       return NextResponse.json({ session });
