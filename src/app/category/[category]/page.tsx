@@ -15,10 +15,11 @@ export async function generateStaticParams() {
   return categories.map((category) => ({ category }));
 }
 
-export default async function Page({ params }: { params: { category: string } }) {
+export default async function Page({ params }: { params: Promise<{ category: string }> }) {
+  const { category } = await params;
   const data = await FetchData();
 
-  const filtered = data.filter((item: any) => item.category === params.category);
+  const filtered = data.filter((item: any) => item.category === category);
 
   return (
     <Wrapper>

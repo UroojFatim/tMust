@@ -32,10 +32,11 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function page({ params }: { params: any }) {
+export default async function page({ params }: { params: Promise<{ product: string }> }) {
+  const { product } = await params;
   const data = await FetchData();
   const foundData = data.find(
-    (item: IProduct) => item.slug.current == params.product
+    (item: IProduct) => item.slug.current == product
   );
 
   return (
