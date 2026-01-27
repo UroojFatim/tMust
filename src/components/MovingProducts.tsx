@@ -3,6 +3,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import ProductCard from "@/components/ProductCart";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import FetchData from "../../sanity/FetchData";
 import Link from "next/link";
 
@@ -57,11 +58,7 @@ export default function MovingProducts() {
   const next = () => setIndex((p) => (p >= maxIndex ? 0 : p + 1));
 
   if (!data.length) {
-    return (
-      <div className="py-10 text-center text-gray-500">
-        Loading products...
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
