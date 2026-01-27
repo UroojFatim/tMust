@@ -5,10 +5,6 @@ import Image from "next/image";
 import HeroImage from "../../public/tMust_Hero.png";
 import { ShoppingCart } from "lucide-react";
 import Wrapper from "@/components/shared/Wrapper";
-import bazaar from "../../public/bazaar.png";
-import bustle from "../../public/bustle.png";
-import instyle from "../../public/instyle.webp";
-import versace from "../../public/versace.png";
 import Link from "next/link";
 
 const Hero = () => {
