@@ -12,15 +12,10 @@ import { Input } from "@/components/ui/input";
 import FetchData from "../../../sanity/FetchData";
 import { urlForImage } from "../../../sanity/lib/image";
 
-const NAV_ITEMS = [
-  { label: "All", href: "/AllProducts" },
-  { label: "New Arrivals", href: "/category/new_arrivals" },
-  { label: "Best Sellers", href: "/category/best_sellers" },
-  { label: "Casual Wear", href: "/category/casual_wears" },
-  { label: "Formal Wear", href: "/category/formal_wears" },
-  { label: "Fancy / Party Wear", href: "/category/fancy_party_wear" },
-  { label: "Traditional Wear", href: "/category/traditional_wear" },
-];
+interface NavItem {
+  label: string;
+  href: string;
+}
 
 const Header = () => {
   const [showSearch, setShowSearch] = useState(false);
@@ -28,6 +23,8 @@ const Header = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [styles, setStyles] = useState<NavItem[]>([]);
+  const [collections, setCollections] = useState<NavItem[]>([]);
 
   // Handle scroll event
   useEffect(() => {
@@ -41,6 +38,43 @@ const Header = () => {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Fetch collections and styles from MongoDB
+  useEffect(() => {
+    const fetchNavItems = async () => {
+      try {
+        const [collectionsRes, stylesRes] = await Promise.all([
+          fetch("/api/public/collections"),
+          fetch("/api/public/styles"),
+        ]);
+
+        const collectionsData = await collectionsRes.json();
+        const stylesData = await stylesRes.json();
+
+        // Set styles
+        if (stylesData.ok && stylesData.styles) {
+          const styleItems = stylesData.styles.map((style: any) => ({
+            label: style.name,
+            href: `/collection/${style.slug}`,
+          }));
+          setStyles(styleItems);
+        }
+
+        // Set collections
+        if (collectionsData.ok && collectionsData.collections) {
+          const collectionItems = collectionsData.collections.map((collection: any) => ({
+            label: collection.name,
+            href: `/collection/${collection.slug}`,
+          }));
+          setCollections(collectionItems);
+        }
+      } catch (error) {
+        console.error("Error fetching nav items:", error);
+      }
+    };
+
+    fetchNavItems();
   }, []);
 
   // Fetch products on mount
@@ -167,7 +201,7 @@ const Header = () => {
                 <Menu className="h-6 w-6 text-black" />
               </SheetTrigger>
 
-              <SheetContent side="left" className="bg-white">
+              <SheetContent side="left" className="bg-white overflow-y-auto">
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                 <div className="flex items-center gap-2 mt-2">
                   <Image
@@ -178,18 +212,57 @@ const Header = () => {
                   />
                 </div>
 
-                <ul className="mt-10 flex flex-col gap-4 text-base font-medium text-black">
-                  {NAV_ITEMS.map((item) => (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        className="block py-2 hover:text-sky-600 transition-colors"
-                      >
-                        {item.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                <nav className="mt-8 space-y-6">
+                  {/* All Products Link */}
+                  <Link
+                    href="/AllProducts"
+                    className="block py-2 text-base font-semibold text-black hover:text-sky-600 transition-colors"
+                  >
+                    All Products
+                  </Link>
+
+                  {/* Styles Section */}
+                  {styles.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">
+                        Styles
+                      </h3>
+                      <ul className="flex flex-col gap-2">
+                        {styles.map((item) => (
+                          <li key={item.href}>
+                            <Link
+                              href={item.href}
+                              className="block py-1.5 text-base text-gray-700 hover:text-sky-600 transition-colors"
+                            >
+                              {item.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Collections Section */}
+                  {collections.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">
+                        Collections
+                      </h3>
+                      <ul className="flex flex-col gap-2">
+                        {collections.map((item) => (
+                          <li key={item.href}>
+                            <Link
+                              href={item.href}
+                              className="block py-1.5 text-base text-gray-700 hover:text-sky-600 transition-colors"
+                            >
+                              {item.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </nav>
               </SheetContent>
             </Sheet>
 
