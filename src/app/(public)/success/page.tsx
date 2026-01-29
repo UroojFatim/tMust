@@ -17,7 +17,7 @@ const SuccessPage = () => {
   }, [userId]);
 
   const handleContinueShopping = () => {
-    router.push("/");
+    router.push("/AllProducts");
   };
 
   return (
@@ -45,8 +45,8 @@ const SuccessPage = () => {
         <p className="font-medium mt-2 ">
           If you have any questions, please email 
           <button className="text-red-600 ml-1">
-            <a href="mailto:ecommercewebsite@example.com">
-              ecommercewebsite@example.com
+            <a href="mailto:tmustt@gmail.com">
+              tmustt@gmail.com
             </a>
           </button>
         </p>

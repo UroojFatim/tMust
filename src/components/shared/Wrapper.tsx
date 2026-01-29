@@ -1,13 +1,11 @@
 import { FC, ReactNode } from "react";
 
-const Wrapper: FC<{ children: ReactNode }> = ({ children }) => {
-  return (
-    <div
-      className="mx-4 px-4 md:mx-8 md:px-8 xl:mx-16 xl:px-16"
-    >
-      {children}
-    </div>
-  );
+const Wrapper: FC<{ children: ReactNode; noGutters?: boolean }> = ({ children, noGutters }) => {
+  const classes = noGutters
+    ? "mx-0 px-6 w-full"
+    : "mx-4 px-4 md:mx-8 md:px-8 xl:mx-16 xl:px-16";
+
+  return <div className={classes}>{children}</div>;
 };
 
 export default Wrapper;

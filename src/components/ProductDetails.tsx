@@ -138,7 +138,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
           return acc + (item.product_quantity ?? 1);
         }, 0);
 
-        toast.success(`✅ Added to cart! Total items: ${totalQty}`, {
+        toast.success(`Added to cart! Total items: ${totalQty}`, {
           autoClose: 3000,
           position: "top-center",
           hideProgressBar: false,
