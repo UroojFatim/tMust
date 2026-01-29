@@ -177,48 +177,57 @@ export default function InventoryDashboardPage() {
           </button>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {statCards.map((card) => (
-            <div
-              key={card.key}
-              className="flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm"
-            >
-              <div>
-                <p className="text-sm text-slate-500">{card.label}</p>
-                <p className="text-2xl font-semibold text-slate-900">
-                  {card.key === "totalSales" || card.key === "totalProfit"
-                    ? `$${Number(stats[card.key] || 0).toFixed(2)}`
-                    : typeof stats[card.key] === "number"
-                      ? stats[card.key]
-                      : 0}
-                </p>
-                {card.key === "totalSales" ? (
-                  <p className="text-xs text-slate-400">
-                    {stats.transactions ?? 0} transactions
-                  </p>
-                ) : null}
-                {card.key === "totalProfit" ? (
-                  <p className="text-xs text-slate-400">Profitable</p>
-                ) : null}
-                {card.key === "lowStockItems" ? (
-                  <p className="text-xs text-slate-400">Needs attention</p>
-                ) : null}
-              </div>
-              <div
-                className={`flex h-12 w-12 items-center justify-center rounded-xl text-white ${card.color}`}
-              >
-                <span className="text-xl">{card.icon}</span>
-              </div>
+        {!statsLoaded ? (
+          <div className="flex items-center justify-center rounded-2xl bg-white p-12 shadow-sm">
+            <div className="flex flex-col items-center gap-3">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900"></div>
+              <p className="text-sm text-slate-500">Loading dashboard data...</p>
             </div>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {statCards.map((card) => (
+              <div
+                key={card.key}
+                className="flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm"
+              >
+                <div>
+                  <p className="text-sm text-slate-500">{card.label}</p>
+                  <p className="text-2xl font-semibold text-slate-900">
+                    {card.key === "totalSales" || card.key === "totalProfit"
+                      ? `$${Number(stats[card.key] || 0).toFixed(2)}`
+                      : typeof stats[card.key] === "number"
+                        ? stats[card.key]
+                        : 0}
+                  </p>
+                  {card.key === "totalSales" ? (
+                    <p className="text-xs text-slate-400">
+                      {stats.transactions ?? 0} transactions
+                    </p>
+                  ) : null}
+                  {card.key === "totalProfit" ? (
+                    <p className="text-xs text-slate-400">Profitable</p>
+                  ) : null}
+                  {card.key === "lowStockItems" ? (
+                    <p className="text-xs text-slate-400">Needs attention</p>
+                  ) : null}
+                </div>
+                <div
+                  className={`flex h-12 w-12 items-center justify-center rounded-xl text-white ${card.color}`}
+                >
+                  <span className="text-xl">{card.icon}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="rounded-2xl bg-white p-6 shadow-sm">
           <div className="flex items-center gap-2 text-lg font-semibold text-slate-800">
             <span>⚡</span>
             <h2>Quick Actions</h2>
           </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Link
               href="/inventory/products/new"
               className="flex flex-col items-center justify-center rounded-xl bg-blue-600 px-4 py-6 text-sm font-semibold text-white shadow"
@@ -226,15 +235,20 @@ export default function InventoryDashboardPage() {
               <span className="text-xl">＋</span>
               Add Product
             </Link>
-            <button className="rounded-xl bg-emerald-600 px-4 py-6 text-sm font-semibold text-white shadow">
-              Scan Barcode
-            </button>
-            <button className="rounded-xl bg-purple-600 px-4 py-6 text-sm font-semibold text-white shadow">
-              Stock Movement
-            </button>
-            <button className="rounded-xl bg-indigo-600 px-4 py-6 text-sm font-semibold text-white shadow">
-              Reports
-            </button>
+            <Link
+              href="/inventory/collections"
+              className="flex flex-col items-center justify-center rounded-xl bg-teal-600 px-4 py-6 text-sm font-semibold text-white shadow"
+            >
+              <span className="text-xl">🏷️</span>
+              Add Collection
+            </Link>
+            <Link
+              href="/inventory/styles"
+              className="flex flex-col items-center justify-center rounded-xl bg-amber-600 px-4 py-6 text-sm font-semibold text-white shadow"
+            >
+              <span className="text-xl">🎨</span>
+              Add Style
+            </Link>
           </div>
         </div>
 

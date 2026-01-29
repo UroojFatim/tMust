@@ -15,17 +15,6 @@ const createVariant = () => ({
   sizes: [createSize()],
 });
 
-const COLLECTIONS = [
-  "Summer Collection",
-  "Winter Collection",
-  "Spring Collection",
-  "Fall Collection",
-  "Premium Collection",
-  "Designer Collection",
-  "Vintage Collection",
-  "Contemporary Collection",
-];
-const STYLES = ["Casual", "Formal", "Fancy", "Traditional"];
 const TAGS = ["New Arrival", "Best Seller"];
 
 export default function AddInventoryProductPage() {
@@ -48,6 +37,9 @@ export default function AddInventoryProductPage() {
   const [createdSkus, setCreatedSkus] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [savedProduct, setSavedProduct] = useState<any | null>(null);
+  const [collections, setCollections] = useState<any[]>([]);
+  const [styles, setStyles] = useState<any[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
 
   useEffect(() => {
     if (form.title) {
@@ -60,6 +52,36 @@ export default function AddInventoryProductPage() {
       setForm((prev) => ({ ...prev, slug }));
     }
   }, [form.title]);
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      setLoadingOptions(true);
+      try {
+        const [collectionsResponse, stylesResponse] = await Promise.all([
+          fetch("/api/inventory/collections", { cache: "no-store" }),
+          fetch("/api/inventory/styles", { cache: "no-store" }),
+        ]);
+
+        if (collectionsResponse.ok) {
+          const data = await collectionsResponse.json();
+          setCollections(data.collections || []);
+        }
+
+        if (stylesResponse.ok) {
+          const data = await stylesResponse.json();
+          setStyles(data.styles || []);
+        }
+      } catch (err) {
+        setError("Unable to load collections or styles.");
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+
+    if (authenticated) {
+      loadOptions();
+    }
+  }, [authenticated]);
 
   const totalVariants = useMemo(() => {
     let count = 0;
@@ -299,37 +321,56 @@ export default function AddInventoryProductPage() {
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, collection: event.target.value }))
                 }
+                disabled={loadingOptions}
               >
                 <option value="">Select a collection</option>
-                {COLLECTIONS.map((collection) => (
-                  <option key={collection} value={collection}>
-                    {collection}
+                {collections.map((collection) => (
+                  <option key={collection._id} value={collection.name}>
+                    {collection.name}
                   </option>
                 ))}
               </select>
+              {collections.length === 0 ? (
+                <p className="mt-2 text-xs text-slate-500">
+                  No collections yet. Add one from{" "}
+                  <Link href="/inventory/collections" className="text-blue-600">
+                    Collections
+                  </Link>
+                  .
+                </p>
+              ) : null}
             </div>
             <div>
               <label className="text-sm font-medium text-slate-600">Styles</label>
               <div className="mt-1 flex flex-wrap gap-2">
-                {STYLES.map((style) => (
-                  <label key={style} className="flex items-center gap-2">
+                {styles.map((style) => (
+                  <label key={style._id} className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={form.style.includes(style)}
+                      checked={form.style.includes(style.name)}
                       onChange={(event) => {
                         setForm((prev) => ({
                           ...prev,
                           style: event.target.checked
-                            ? [...prev.style, style]
-                            : prev.style.filter((s) => s !== style),
+                            ? [...prev.style, style.name]
+                            : prev.style.filter((s) => s !== style.name),
                         }));
                       }}
                       className="rounded border-slate-200"
                     />
-                    <span className="text-sm">{style}</span>
+                    <span className="text-sm">{style.name}</span>
                   </label>
                 ))}
               </div>
+              {styles.length === 0 ? (
+                <p className="mt-2 text-xs text-slate-500">
+                  No styles yet. Add one from{" "}
+                  <Link href="/inventory/styles" className="text-blue-600">
+                    Styles
+                  </Link>
+                  .
+                </p>
+              ) : null}
             </div>
             <div>
               <label className="text-sm font-medium text-slate-600">
