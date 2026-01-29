@@ -21,6 +21,8 @@
     "class-variance-authority": "^0.7.1",
     "cookie": "^1.0.2",
     "emailjs-com": "^3.2.0",
+    "embla-carousel-autoplay": "^8.6.0",
+    "embla-carousel-react": "^8.6.0",
     "eslint": "^9.18.0",
     "eslint-config-next": "^15.1.4",
     "js-cookie": "^3.0.5",
