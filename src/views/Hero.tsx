@@ -24,7 +24,7 @@ const Hero = () => {
   }, [ maxIndex]);
 
   return (
-    <section className="relative w-full h-[calc(100vh-0px)] min-h-[600px]">
+    <section className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[calc(100vh-0px)] min-h-[400px] sm:min-h-[500px] md:min-h-[600px]">
       <div
         className="absolute inset-0 z-0"
       >
@@ -44,7 +44,8 @@ const Hero = () => {
                   alt={slide.alt}
                   fill
                   priority={slideIndex === 0}
-                  className="object-cover object-top"
+                  className="object-cover object-center sm:object-top"
+                  sizes="100vw"
                 />
               </div>
             ))}

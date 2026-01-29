@@ -170,7 +170,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
   if (!foundData) return null;
 
   return (
-    <div className="flex mt-16">
+    <div className="flex mt-32">
       <div key={foundData._id}>
         {/* First Row */}
         <div className="flex">
@@ -292,16 +292,6 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
                 ${Number(foundData.price || 0).toFixed(2)}
               </div>
             </div>
-
-            {/* ✅ show selected variant in UI (optional but helpful) */}
-            {(hasSizes || hasColors) && (
-              <div className="mt-4 text-sm text-gray-600">
-                Selected:{" "}
-                {hasSizes ? `Size: ${selectedSize ?? "—"}` : null}
-                {hasSizes && hasColors ? " | " : null}
-                {hasColors ? `Color: ${selectedColor ?? "—"}` : null}
-              </div>
-            )}
           </div>
         </div>
 

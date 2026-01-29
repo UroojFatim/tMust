@@ -23,7 +23,7 @@ export default async function Page({ params }: { params: Promise<{ category: str
 
   return (
     <Wrapper>
-      <section className="py-8">
+      <section className="py-32">
         <AllProductsClient products={filtered} />
       </section>
     </Wrapper>

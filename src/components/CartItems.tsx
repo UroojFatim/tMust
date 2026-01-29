@@ -182,7 +182,7 @@ export default function CartItems() {
 
   return (
     <Wrapper>
-      <section className="px-12 my-16">
+      <section className="px-12 my-32">
         <h1 className="font-bold text-2xl">Shopping Cart</h1>
 
         {loading ? (
