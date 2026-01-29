@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { FC, useMemo, useState } from "react";
 import Link from "next/link";
+import { urlForImage } from "../../sanity/lib/image";
 
 const categoryLabel: Record<string, string> = {
   new_arrivals: "New Arrivals",
@@ -25,18 +26,42 @@ const colorClass: Record<string, string> = {
 };
 
 const ProductCard: FC<{ item: any, linkTo?: string, onColorSelect?: () => void }> = ({ item, linkTo, onColorSelect }) => {
-  const img0 = item?.images?.[0] ?? "";
-  const img1 = item?.images?.[1] ?? null;
+  // Handle both Sanity images (objects with asset) and local images (strings)
+  const img0 = useMemo(() => {
+    const firstImage = item?.images?.[0];
+    if (!firstImage) return null;
+    if (typeof firstImage === "string") return firstImage || null;
+    if (firstImage?.asset?.url) return firstImage.asset.url;
+    if (firstImage?.url) return firstImage.url;
+    if (firstImage?.asset) return urlForImage(firstImage.asset).url() ?? null;
+    return null;
+  }, [item]);
+
+  const img1 = useMemo(() => {
+    const secondImage = item?.images?.[1];
+    if (!secondImage) return null;
+    if (typeof secondImage === "string") return secondImage || null;
+    if (secondImage?.asset?.url) return secondImage.asset.url;
+    if (secondImage?.url) return secondImage.url;
+    if (secondImage?.asset) return urlForImage(secondImage.asset).url() ?? null;
+    return null;
+  }, [item]);
+
   const [hovered, setHovered] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
   const imageUrl = useMemo(() => {
     if (selectedColor) {
       const ci = (item?.colorImages || []).find((c: any) => c.color === selectedColor);
-      if (ci) return ci.image;
+      if (ci?.image) {
+        if (typeof ci.image === "string") return ci.image || null;
+        if (ci.image?.asset?.url) return ci.image.asset.url;
+        if (ci.image?.url) return ci.image.url;
+        if (ci.image?.asset) return urlForImage(ci.image.asset).url() ?? null;
+      }
     }
     if (hovered && img1) return img1;
-    return img0 || "";
+    return img0;
   }, [hovered, img0, img1, selectedColor, item]);
 
   return (
@@ -47,7 +72,7 @@ const ProductCard: FC<{ item: any, linkTo?: string, onColorSelect?: () => void }
     >
       {/* Image */}
       <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
-        {imageUrl && (
+        {imageUrl ? (
           <Link href={linkTo ?? '#'} className="block">
             <Image
               src={imageUrl}
@@ -57,6 +82,10 @@ const ProductCard: FC<{ item: any, linkTo?: string, onColorSelect?: () => void }
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           </Link>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+            <span className="text-gray-400 text-sm">No image</span>
+          </div>
         )}
 
         {/* Badge */}

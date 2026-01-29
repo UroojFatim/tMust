@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import ProductCart from "@/components/ProductCart";
 import FiltersSidebar from "@/components/FiltersSidebar";
-import Link from "next/link";
 
 export default function AllProductsClient({ products }: { products: any[] }) {
   const [price, setPrice] = useState([0, 500]);
@@ -12,7 +11,7 @@ export default function AllProductsClient({ products }: { products: any[] }) {
   const [styles, setStyles] = useState<string[]>([]);
 
   const filteredProducts = useMemo(() => {
-    console.log(products)
+    console.log("Products:", products); console.log("First product images:", products[0]?.images)
     return products.filter((p) => {
       const matchPrice =
         p.price >= price[0] && p.price <= price[1];
@@ -58,12 +57,11 @@ export default function AllProductsClient({ products }: { products: any[] }) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
           {filteredProducts.map((product) => (
-            <Link
+            <ProductCart
               key={product._id}
-              href={`/product/${product.slug.current}`}
-            >
-              <ProductCart item={product} />
-            </Link>
+              item={product}
+              linkTo={`/product/${product.slug.current}`}
+            />
           ))}
         </div>
       </div>
