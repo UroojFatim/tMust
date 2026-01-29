@@ -92,7 +92,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       userId,
       refreshCart,
     }),
-    [cartItemCount, cartItems, userId]
+    [cartItemCount, cartItems, userId, refreshCart]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

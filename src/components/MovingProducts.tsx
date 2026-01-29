@@ -3,13 +3,15 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import ProductCard from "@/components/ProductCart";
-import FetchData from "../../sanity/FetchData";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import products from "@/data";
 import Link from "next/link";
 
 export default function MovingProducts() {
   const [data, setData] = useState<any[]>([]);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const resumeTimer = useRef<number | null>(null);
 
   // responsive items count
   const [itemsToShow, setItemsToShow] = useState(3);
@@ -27,18 +29,17 @@ export default function MovingProducts() {
   }, []);
 
   useEffect(() => {
-    async function fetchData() {
-      const productData = await FetchData();
-      console.log("Fetched products:", productData);
-      setData(productData || []);
-    }
-    fetchData();
+    // use local product data instead of fetching from Sanity
+    setData(products || []);
   }, []);
 
   const maxIndex = useMemo(() => {
     if (!data.length) return 0;
     return Math.max(0, data.length - itemsToShow);
   }, [data.length, itemsToShow]);
+
+  // help TS accept extended ProductCard props
+  const PC: any = ProductCard;
 
   // keep index in range when itemsToShow changes
   useEffect(() => {
@@ -53,15 +54,27 @@ export default function MovingProducts() {
     return () => clearInterval(t);
   }, [data.length, paused, maxIndex]);
 
+  // pause autoplay for a short time (ms)
+  const pauseFor = (ms = 1500) => {
+    setPaused(true);
+    if (resumeTimer.current) window.clearTimeout(resumeTimer.current);
+    resumeTimer.current = window.setTimeout(() => {
+      setPaused(false);
+      resumeTimer.current = null;
+    }, ms) as unknown as number;
+  };
+
+  useEffect(() => {
+    return () => {
+      if (resumeTimer.current) window.clearTimeout(resumeTimer.current);
+    };
+  }, []);
+
   const prev = () => setIndex((p) => (p <= 0 ? maxIndex : p - 1));
   const next = () => setIndex((p) => (p >= maxIndex ? 0 : p + 1));
 
   if (!data.length) {
-    return (
-      <div className="py-10 text-center text-gray-500">
-        Loading products...
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
@@ -70,39 +83,23 @@ export default function MovingProducts() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* controls */}
-      <button
-        onClick={prev}
-        className="hidden md:flex items-center justify-center absolute -left-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white shadow-md border hover:scale-105 transition"
-        aria-label="Previous"
-      >
-        ‹
-      </button>
-      <button
-        onClick={next}
-        className="hidden md:flex items-center justify-center absolute -right-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white shadow-md border hover:scale-105 transition"
-        aria-label="Next"
-      >
-        ›
-      </button>
+      {/* controls removed per request */}
 
       {/* viewport */}
       <div className="overflow-hidden">
         <div
-          className="flex gap-6 transition-transform duration-700 ease-in-out"
+          className="flex gap-0 transition-transform duration-700 ease-in-out"
           style={{
             transform: `translateX(calc(-${index} * (100% / ${itemsToShow})))`,
           }}
         >
           {data.map((item, i) => (
             <div
-              key={item?._id ?? i}
-              className="shrink-0"
+              key={item?.id ?? i}
+              className="shrink-0 px-2"
               style={{ width: `calc(100% / ${itemsToShow})` }}
             >
-              <Link href={`/product/${item.slug.current}`} className="block">
-                <ProductCard item={item} />
-              </Link>
+              <PC item={item} linkTo={`/product/${item.slug}`} onColorSelect={() => pauseFor(1500)} />
             </div>
           ))}
         </div>

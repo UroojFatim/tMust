@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { urlForImage } from "../../sanity/lib/image";
 import { FC, useMemo, useState } from "react";
+import Link from "next/link";
 
 const categoryLabel: Record<string, string> = {
   new_arrivals: "New Arrivals",
@@ -24,15 +24,20 @@ const colorClass: Record<string, string> = {
   beige: "bg-[#e7d3b1]",
 };
 
-const ProductCard: FC<{ item: any }> = ({ item }) => {
-  const img0 = item?.images?.[0];
-  const img1 = item?.images?.[1];
+const ProductCard: FC<{ item: any, linkTo?: string, onColorSelect?: () => void }> = ({ item, linkTo, onColorSelect }) => {
+  const img0 = item?.images?.[0] ?? "";
+  const img1 = item?.images?.[1] ?? null;
   const [hovered, setHovered] = useState(false);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
   const imageUrl = useMemo(() => {
-    const img = hovered && img1 ? img1 : img0;
-    return img ? urlForImage(img).url() : "";
-  }, [hovered, img0, img1]);
+    if (selectedColor) {
+      const ci = (item?.colorImages || []).find((c: any) => c.color === selectedColor);
+      if (ci) return ci.image;
+    }
+    if (hovered && img1) return img1;
+    return img0 || "";
+  }, [hovered, img0, img1, selectedColor, item]);
 
   return (
     <div
@@ -43,13 +48,15 @@ const ProductCard: FC<{ item: any }> = ({ item }) => {
       {/* Image */}
       <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
         {imageUrl && (
-          <Image
-            src={imageUrl}
-            alt={item?.title || "Product"}
-            fill
-            className="object-cover object-top group-hover:scale-[1.03] transition duration-500"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
+          <Link href={linkTo ?? '#'} className="block">
+            <Image
+              src={imageUrl}
+              alt={item?.title || "Product"}
+              fill
+              className="object-cover object-top group-hover:scale-[1.03] transition duration-500"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+          </Link>
         )}
 
         {/* Badge */}
@@ -61,25 +68,9 @@ const ProductCard: FC<{ item: any }> = ({ item }) => {
 
         {/* Quick meta strip */}
         <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3">
-          <span className="rounded-full bg-black/70 px-3 py-1 text-xs font-semibold text-white">
-            {item?.style?.toUpperCase()}
+          <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-gray-900 backdrop-blur border">
+            {categoryLabel[item?.category] ?? (item?.category ?? "").replace(/_/g, " ")}
           </span>
-
-          {/* color dots */}
-          <div className="flex -space-x-1">
-            {(item?.colors || []).slice(0, 4).map((c: string, idx: number) => (
-              <span
-                key={idx}
-                className={`h-5 w-5 rounded-full ${colorClass[c] ?? "bg-gray-200"} ring-2 ring-white`}
-                title={c}
-              />
-            ))}
-            {(item?.colors || []).length > 4 && (
-              <span className="h-5 w-5 rounded-full bg-white ring-2 ring-white border flex items-center justify-center text-[10px] font-bold text-gray-700">
-                +{(item.colors.length as number) - 4}
-              </span>
-            )}
-          </div>
         </div>
       </div>
 
@@ -93,6 +84,25 @@ const ProductCard: FC<{ item: any }> = ({ item }) => {
             ${item?.price}
           </p>
         </div>
+
+          {/* color swatches (use color names) */}
+          <div className="mt-3 flex items-center gap-3">
+            {(item?.colors || []).map((c: string, idx: number) => {
+              const ci = (item?.colorImages || []).find((x: any) => x.color === c);
+              const selected = selectedColor === c;
+              return (
+                <button
+                  key={c + idx}
+                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); setSelectedColor(c); onColorSelect?.(); }}
+                  className={`flex items-center gap-2 px-2 py-1 rounded-full border transition-all ${selected ? 'ring-2 ring-brand-navy' : ''}`}
+                  aria-label={`Select ${c}`}
+                >
+                  <span className={`inline-block h-4 w-4 rounded-full ${colorClass[c] ?? 'bg-gray-200'} border`} />
+                  <span className="text-xs text-gray-700 capitalize">{c.replace(/_/g, ' ')}</span>
+                </button>
+              );
+            })}
+          </div>
 
         {/* sizes */}
         <div className="mt-3 flex flex-wrap gap-2">
@@ -111,10 +121,7 @@ const ProductCard: FC<{ item: any }> = ({ item }) => {
           )}
         </div>
 
-        {/* small CTA */}
-        <button className="mt-4 w-full rounded-xl border px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition">
-          View Product
-        </button>
+        {/* small CTA removed; image opens detail page */}
       </div>
     </div>
   );
