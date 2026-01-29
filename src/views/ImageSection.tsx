@@ -1,14 +1,17 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 
 export default function ImageSection({ src }: { src: string }) {
   return (
     <div className="relative w-full h-screen">
-      <img
+      <Image
         src={src} // Using the passed image source here
         alt="Hero"
-        className="w-full h-full object-cover object-left"
+        fill
+        className="object-cover object-left"
+        priority
       />
     </div>
   );
