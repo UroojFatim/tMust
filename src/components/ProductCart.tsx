@@ -5,15 +5,6 @@ import { FC, useMemo, useState } from "react";
 import Link from "next/link";
 import { urlForImage } from "../../sanity/lib/image";
 
-const categoryLabel: Record<string, string> = {
-  new_arrivals: "New Arrivals",
-  best_sellers: "Best Sellers",
-  casual_wears: "Casual",
-  formal_wears: "Formal",
-  fancy_party_wear: "Party",
-  traditional_wear: "Traditional",
-};
-
 const colorClass: Record<string, string> = {
   black: "bg-black",
   white: "bg-white border",
@@ -23,84 +14,93 @@ const colorClass: Record<string, string> = {
   red: "bg-red-500",
   blue: "bg-blue-500",
   beige: "bg-[#e7d3b1]",
+  brown: "bg-amber-700",
+  orange: "bg-orange-500",
+  "dark brown": "bg-amber-900",
 };
 
 const ProductCard: FC<{ item: any, linkTo?: string, onColorSelect?: () => void }> = ({ item, linkTo, onColorSelect }) => {
-  // Handle both Sanity images (objects with asset) and local images (strings)
-  const img0 = useMemo(() => {
-    const firstImage = item?.images?.[0];
-    if (!firstImage) return null;
-    if (typeof firstImage === "string") return firstImage || null;
-    if (firstImage?.asset?.url) return firstImage.asset.url;
-    if (firstImage?.url) return firstImage.url;
-    if (firstImage?.asset) return urlForImage(firstImage.asset).url() ?? null;
-    return null;
-  }, [item]);
-
-  const img1 = useMemo(() => {
-    const secondImage = item?.images?.[1];
-    if (!secondImage) return null;
-    if (typeof secondImage === "string") return secondImage || null;
-    if (secondImage?.asset?.url) return secondImage.asset.url;
-    if (secondImage?.url) return secondImage.url;
-    if (secondImage?.asset) return urlForImage(secondImage.asset).url() ?? null;
-    return null;
-  }, [item]);
-
   const [hovered, setHovered] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
-  const imageUrl = useMemo(() => {
+  // Extract data from MongoDB product structure
+  const variants = useMemo(() => item?.variants || [], [item?.variants]);
+  const firstVariant = variants[0];
+  
+  // Get all unique colors from variants
+  const colors = useMemo(() => {
+    return variants.map((v: any) => v.color).filter(Boolean);
+  }, [variants]);
+
+  // Get all unique sizes from all variants
+  const sizes = useMemo(() => {
+    const sizeSet = new Set<string>();
+    variants.forEach((variant: any) => {
+      (variant.sizes || []).forEach((s: any) => {
+        if (s.size) sizeSet.add(s.size);
+      });
+    });
+    return Array.from(sizeSet);
+  }, [variants]);
+
+  // Get current variant based on selected color or first variant
+  const currentVariant = useMemo(() => {
     if (selectedColor) {
-      const ci = (item?.colorImages || []).find((c: any) => c.color === selectedColor);
-      if (ci?.image) {
-        if (typeof ci.image === "string") return ci.image || null;
-        if (ci.image?.asset?.url) return ci.image.asset.url;
-        if (ci.image?.url) return ci.image.url;
-        if (ci.image?.asset) return urlForImage(ci.image.asset).url() ?? null;
-      }
+      return variants.find((v: any) => v.color?.toLowerCase() === selectedColor.toLowerCase()) || firstVariant;
     }
+    return firstVariant;
+  }, [selectedColor, variants, firstVariant]);
+
+  // Get images for current variant
+  const currentImages = currentVariant?.images || [];
+  const img0 = currentImages[0]?.url || "";
+  const img1 = currentImages[1]?.url || null;
+
+  const imageUrl = useMemo(() => {
     if (hovered && img1) return img1;
-    return img0;
-  }, [hovered, img0, img1, selectedColor, item]);
+    return img0 || "";
+  }, [hovered, img0, img1]);
 
   return (
-    <div
-      className="group rounded-2xl border bg-white overflow-hidden shadow-sm hover:shadow-lg transition"
+    <Link 
+      href={linkTo ?? '#'}
+      className="block group rounded-2xl border bg-white overflow-hidden shadow-sm hover:shadow-lg transition"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       {/* Image */}
       <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
         {imageUrl ? (
-          <Link href={linkTo ?? '#'} className="block">
-            <Image
-              src={imageUrl}
-              alt={item?.title || "Product"}
-              fill
-              className="object-cover object-top group-hover:scale-[1.03] transition duration-500"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            />
-          </Link>
+          <Image
+            src={imageUrl}
+            alt={item?.title || "Product"}
+            fill
+            className="object-cover object-top group-hover:scale-[1.03] transition duration-500"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <span className="text-gray-400 text-sm">No image</span>
+            <span className="text-gray-400 text-sm">No Image</span>
           </div>
         )}
 
         {/* Badge */}
-        <div className="absolute left-3 top-3">
-          <span className="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-gray-900 backdrop-blur border">
-            {categoryLabel[item?.category] ?? item?.category}
-          </span>
-        </div>
+        {item?.tags && item.tags.length > 0 && (
+          <div className="absolute left-3 top-3">
+            <span className="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-gray-900 backdrop-blur border">
+              {item.tags[0]}
+            </span>
+          </div>
+        )}
 
-        {/* Quick meta strip */}
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3">
-          <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-gray-900 backdrop-blur border">
-            {categoryLabel[item?.category] ?? (item?.category ?? "").replace(/_/g, " ")}
-          </span>
-        </div>
+        {/* Style label at bottom */}
+        {item?.style && (
+          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3">
+            <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-gray-900 backdrop-blur border">
+              {item.style}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Info */}
@@ -110,49 +110,57 @@ const ProductCard: FC<{ item: any, linkTo?: string, onColorSelect?: () => void }
             {item?.title}
           </h3>
           <p className="font-bold text-gray-900 whitespace-nowrap">
-            ${item?.price}
+            ${item?.basePrice}
           </p>
         </div>
 
-          {/* color swatches (use color names) */}
-          <div className="mt-3 flex items-center gap-3">
-            {(item?.colors || []).map((c: string, idx: number) => {
-              const ci = (item?.colorImages || []).find((x: any) => x.color === c);
-              const selected = selectedColor === c;
+        {/* color swatches */}
+        {colors.length > 0 && (
+          <div className="mt-3 flex items-center gap-2 flex-wrap">
+            {colors.map((color: string, idx: number) => {
+              const selected = selectedColor?.toLowerCase() === color?.toLowerCase();
+              const normalizedColor = color.toLowerCase().replace(/\s+/g, ' ');
               return (
                 <button
-                  key={c + idx}
-                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); setSelectedColor(c); onColorSelect?.(); }}
-                  className={`flex items-center gap-2 px-2 py-1 rounded-full border transition-all ${selected ? 'ring-2 ring-brand-navy' : ''}`}
-                  aria-label={`Select ${c}`}
+                  key={color + idx}
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    e.preventDefault(); 
+                    setSelectedColor(color); 
+                    onColorSelect?.(); 
+                  }}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded-full border transition-all ${selected ? 'ring-2 ring-gray-900' : ''}`}
+                  aria-label={`Select ${color}`}
+                  title={color}
                 >
-                  <span className={`inline-block h-4 w-4 rounded-full ${colorClass[c] ?? 'bg-gray-200'} border`} />
-                  <span className="text-xs text-gray-700 capitalize">{c.replace(/_/g, ' ')}</span>
+                  <span className={`inline-block h-4 w-4 rounded-full ${colorClass[normalizedColor] ?? 'bg-gray-200'} border`} />
+                  <span className="text-xs text-gray-700 capitalize">{color}</span>
                 </button>
               );
             })}
           </div>
+        )}
 
         {/* sizes */}
-        <div className="mt-3 flex flex-wrap gap-2">
-          {(item?.sizes || []).slice(0, 5).map((s: string, idx: number) => (
-            <span
-              key={idx}
-              className="text-[11px] font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-700"
-            >
-              {String(s).toUpperCase()}
-            </span>
-          ))}
-          {(item?.sizes || []).length > 5 && (
-            <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-700">
-              +{(item.sizes.length as number) - 5}
-            </span>
-          )}
-        </div>
-
-        {/* small CTA removed; image opens detail page */}
+        {sizes.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {sizes.slice(0, 5).map((size: string, idx: number) => (
+              <span
+                key={idx}
+                className="text-[11px] font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-700"
+              >
+                {String(size).toUpperCase()}
+              </span>
+            ))}
+            {sizes.length > 5 && (
+              <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                +{sizes.length - 5}
+              </span>
+            )}
+          </div>
+        )}
       </div>
-    </div>
+    </Link>
   );
 };
 

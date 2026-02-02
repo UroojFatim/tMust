@@ -27,12 +27,9 @@ const Footer = () => {
               Shop
             </h3>
             <button>
-              <ul className="space-y-2 sm:space-y-2.5 mt-3 sm:mt-4 text-sm sm:text-base lg:text-lg xl:text-xl text-start">
-                <li className="hover:text-black transition-colors">Mew Arrivals</li>
-                <li className="hover:text-black transition-colors">Best Sellers</li>
-                <li className="hover:text-black transition-colors">Casual Wears</li>
-                <li className="hover:text-black transition-colors">Formal Wears</li>
-                <li className="hover:text-black transition-colors">Traditional Wears</li>
+              <ul className="space-y-2 mt-4 lg:text-xl text-start">
+                <li>New Arrivals</li>
+                <li>Best Sellers</li>
               </ul>
             </button>
           </div>
@@ -42,11 +39,21 @@ const Footer = () => {
             </h3>
             <button>
               <ul className="space-y-2 sm:space-y-2.5 mt-3 sm:mt-4 text-sm sm:text-base lg:text-lg xl:text-xl text-start">
-                <li className="hover:text-black transition-colors">Contact Us</li>
-                <li className="hover:text-black transition-colors">Shipping Information</li>
-                <li className="hover:text-black transition-colors">Return and Exchange</li>
-                <li className="hover:text-black transition-colors">Size Guide</li>
-                <li className="hover:text-black transition-colors">Track Order</li>
+                <li className="hover:text-black transition-colors">
+                  Contact Us
+                </li>
+                <li className="hover:text-black transition-colors">
+                  Shipping Information
+                </li>
+                <li className="hover:text-black transition-colors">
+                  Return and Exchange
+                </li>
+                <li className="hover:text-black transition-colors">
+                  Size Guide
+                </li>
+                <li className="hover:text-black transition-colors">
+                  Track Order
+                </li>
               </ul>
             </button>
           </div>

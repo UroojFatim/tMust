@@ -4,13 +4,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import ProductCard from "@/components/ProductCart";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import products from "@/data";
 import Link from "next/link";
 
-export default function MovingProducts() {
+interface MovingProductsProps {
+  collectionSlug: string;
+}
+
+export default function MovingProducts({ collectionSlug }: MovingProductsProps) {
   const [data, setData] = useState<any[]>([]);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [loading, setLoading] = useState(true);
   const resumeTimer = useRef<number | null>(null);
 
   // responsive items count
@@ -29,9 +33,40 @@ export default function MovingProducts() {
   }, []);
 
   useEffect(() => {
-    // use local product data instead of fetching from Sanity
-    setData(products || []);
-  }, []);
+    // Fetch products from MongoDB based on collection slug
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        console.log("Fetching products for collection:", collectionSlug);
+        const response = await fetch(`/api/public/products/collection/${collectionSlug}`);
+        const result = await response.json();
+        
+        console.log("API Response:", result);
+        
+        // Show debug info to understand database structure
+        if (result.debug) {
+          console.log("Products in database:", result.debug);
+        }
+        
+        if (result.ok && result.products) {
+          console.log(`Received ${result.products.length} products`);
+          setData(result.products);
+        } else {
+          console.error("Failed to fetch products:", result.message);
+          setData([]);
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (collectionSlug) {
+      fetchProducts();
+    }
+  }, [collectionSlug]);
 
   const maxIndex = useMemo(() => {
     if (!data.length) return 0;
@@ -73,8 +108,16 @@ export default function MovingProducts() {
   const prev = () => setIndex((p) => (p <= 0 ? maxIndex : p - 1));
   const next = () => setIndex((p) => (p >= maxIndex ? 0 : p + 1));
 
-  if (!data.length) {
+  if (loading) {
     return <LoadingSpinner />;
+  }
+
+  if (!data.length) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No products found for this collection.
+      </div>
+    );
   }
 
   return (
