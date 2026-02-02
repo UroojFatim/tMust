@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getInventorySession } from "@/lib/inventoryAuth";
-import fs from "fs";
-import path from "path";
-
-const UPLOAD_DIR = path.join(process.cwd(), "public", "inventory-uploads");
-
-function ensureUploadDir() {
-  if (!fs.existsSync(UPLOAD_DIR)) {
-    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-  }
-}
+import { getDatabase } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
 export async function POST(request: NextRequest) {
   const session = getInventorySession(request);
@@ -18,7 +10,6 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    ensureUploadDir();
     const formData = await request.formData();
     const file = formData.get("file") as File;
 
@@ -29,13 +20,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Convert file to base64
     const buffer = await file.arrayBuffer();
-    const filename = `${Date.now()}-${file.name}`.replace(/[^a-z0-9.-]/gi, "_");
-    const filepath = path.join(UPLOAD_DIR, filename);
+    const base64 = Buffer.from(buffer).toString("base64");
+    const mimeType = file.type;
 
-    fs.writeFileSync(filepath, Buffer.from(buffer));
+    // Store in MongoDB
+    const db = await getDatabase();
+    const imagesCollection = db.collection("uploaded_images");
 
-    const url = `/inventory-uploads/${filename}`;
+    const result = await imagesCollection.insertOne({
+      filename: file.name,
+      mimeType,
+      base64Data: `data:${mimeType};base64,${base64}`,
+      uploadedAt: new Date(),
+      uploadedBy: session.username,
+    });
+
+    const imageId = result.insertedId.toString();
+    const url = `/api/inventory/images/${imageId}`;
+
     return NextResponse.json({ ok: true, url });
   } catch (error) {
     console.error("Upload error:", error);

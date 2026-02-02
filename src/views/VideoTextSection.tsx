@@ -103,7 +103,7 @@ export default function VideoTextSection() {
               />
 
               <div className="mt-3 text-sm font-medium">ROOP SAREE - BEIGE & PINK</div>
-              <div className="text-lg font-semibold">Rs.27,000</div>
+              <div className="text-lg font-semibold">$ 27,00</div>
             </div>
           </div>
         </div>
