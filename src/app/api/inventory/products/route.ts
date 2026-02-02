@@ -172,7 +172,9 @@ export async function POST(request: NextRequest) {
     slug,
     shortDescription: String(body.shortDescription || "").trim(),
     collection: String(body.collection || "").trim(),
-    style: Array.isArray(body.style) ? body.style : [],
+    collectionSlug: String(body.collectionSlug || "").trim(),
+    style: String(body.style || "").trim(),
+    styleSlug: String(body.styleSlug || "").trim(),
     tags: Array.isArray(body.tags) ? body.tags : [],
     details: Array.isArray(body.details)
       ? body.details

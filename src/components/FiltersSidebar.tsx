@@ -2,7 +2,6 @@
 
 const SIZES = ["xs", "s", "m", "l", "xl", "24", "26", "28", "30", "32"];
 const COLORS = ["black", "white", "navy", "gray", "pink", "red", "blue", "beige"];
-const STYLES = ["casual", "formal", "fancy", "traditional"];
 
 export default function FiltersSidebar({
   price,
@@ -11,10 +10,8 @@ export default function FiltersSidebar({
   setSizes,
   colors,
   setColors,
-  styles,
-  setStyles,
   total,
-  maxPrice = 500,
+  maxPrice = 10000,
 }: any) {
   const toggle = (value: string, state: string[], setState: any) => {
     setState(state.includes(value) ? state.filter((v) => v !== value) : [...state, value]);
@@ -29,7 +26,6 @@ export default function FiltersSidebar({
             setPrice([0, maxPrice]);
             setSizes([]);
             setColors([]);
-            setStyles([]);
           }}
           className="text-sm text-blue-600"
         >
@@ -83,23 +79,6 @@ export default function FiltersSidebar({
                 onChange={() => toggle(c, colors, setColors)}
               />
               <span className="capitalize">{c}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* STYLE */}
-      <div>
-        <p className="font-medium mb-2">Style</p>
-        <div className="space-y-2">
-          {STYLES.map((s) => (
-            <label key={s} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={styles.includes(s)}
-                onChange={() => toggle(s, styles, setStyles)}
-              />
-              <span className="capitalize">{s}</span>
             </label>
           ))}
         </div>

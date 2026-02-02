@@ -14,6 +14,7 @@ async function getCollectionData(slug: string) {
     const stylesData = await stylesRes.json();
     const productsData = await productsRes.json();
 
+    console.log("productsData",productsData)
     // Find matching collection or style
     const collection = collectionsData.collections?.find((c: any) => c.slug === slug);
     const style = stylesData.styles?.find((s: any) => s.slug === slug);
@@ -30,27 +31,38 @@ async function getCollectionData(slug: string) {
     const styleMap = new Map(allStyles.map((s: any) => [s._id, s.name]));
 
     console.log("Matched collection:", collection);
-    console.log("Matched style:", style);
+    console.log("Matched style:", styleMap);
     console.log("Total products:", products.length);
     console.log("Sample product:", products[0]);
 
-    // Filter products by collection or style ID and add style names
-    const filtered = products
-      .filter((product: any) => {
-        if (collection) {
-          const matches = product.collectionId?.toString() === collection._id?.toString();
-          console.log(`Product ${product.title}: collectionId=${product.collectionId}, collection._id=${collection._id}, matches=${matches}`);
-          return matches;
-        }
-        if (style) {
-          return product.styleId?.toString() === style._id?.toString();
-        }
-        return false;
-      })
-      .map((product: any) => ({
+    // Filter products by collection slug from URL
+    let filtered = products;
+    
+    if (collection) {
+      filtered = products.filter((product: any) => {
+        // Try matching by collectionSlug first (new products)
+        // Fall back to matching collection name with slug (old products)
+        const matchesBySlug = product.collectionSlug === slug;
+        const matchesByName = product.collection?.toLowerCase().replace(/\s+/g, '-') === slug;
+        const matches = matchesBySlug || matchesByName;
+        console.log(`Product ${product.title}: collectionSlug=${product.collectionSlug}, collection=${product.collection}, slug=${slug}, matches=${matches}`);
+        return matches;
+      });
+    }
+
+    // Add style names - handle both string and array (old products)
+    filtered = filtered.map((product: any) => {
+      let styleName = "Uncategorized";
+      if (typeof product.style === 'string') {
+        styleName = product.style;
+      } else if (Array.isArray(product.style) && product.style.length > 0) {
+        styleName = product.style[0];
+      }
+      return {
         ...product,
-        styleName: styleMap.get(product.styleId) || "Uncategorized",
-      }));
+        styleName: styleName,
+      };
+    });
 
     console.log("Filtered products count:", filtered.length);
 
@@ -101,7 +113,7 @@ export default async function Page({ params }: { params: Promise<{ collection: s
 
   return (
     <Wrapper>
-      <section className="py-8">
+      <section className="py-32">
         <h1 className="text-3xl font-bold mb-6 capitalize">
           {data.name}
         </h1>

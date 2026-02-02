@@ -24,16 +24,24 @@ const normalize = (v: string | null | undefined) =>
 const ProductDetails = ({ foundData }: { foundData: any }) => {
   const [num, setNum] = useState(1);
 
-  // ✅ dynamic variations
-  const sizesFromSanity: string[] = useMemo(
-    () => (Array.isArray(foundData?.sizes) ? foundData.sizes : []),
-    [foundData?.sizes]
-  );
+  // ✅ Extract data from MongoDB structure (variants)
+  const variants = foundData?.variants || [];
 
-  const colorsFromSanity: string[] = useMemo(
-    () => (Array.isArray(foundData?.colors) ? foundData.colors : []),
-    [foundData?.colors]
-  );
+  // Get all unique sizes from all variants
+  const sizesFromSanity: string[] = useMemo(() => {
+    const sizeSet = new Set<string>();
+    variants.forEach((variant: any) => {
+      (variant.sizes || []).forEach((s: any) => {
+        if (s.size) sizeSet.add(s.size);
+      });
+    });
+    return Array.from(sizeSet);
+  }, [variants]);
+
+  // Get all unique colors from variants
+  const colorsFromSanity: string[] = useMemo(() => {
+    return variants.map((v: any) => v.color).filter(Boolean);
+  }, [variants]);
 
   const hasSizes = sizesFromSanity.length > 0;
   const hasColors = colorsFromSanity.length > 0;
@@ -46,35 +54,76 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
   // ✅ IMPORTANT: prefer refreshCart (badge count should come from backend)
   const { userId, refreshCart } = useCart();
 
+  // Get current variant based on selected color
+  const currentVariant = useMemo(() => {
+    if (selectedColor) {
+      return (
+        variants.find(
+          (v: any) => v.color?.toLowerCase() === selectedColor.toLowerCase(),
+        ) || variants[0]
+      );
+    }
+    return variants[0];
+  }, [selectedColor, variants]);
+
+  // Get all images from all variants for display
+  const allProductImages = useMemo(() => {
+    const images: any[] = [];
+    variants.forEach((variant: any) => {
+      if (variant.images && Array.isArray(variant.images)) {
+        images.push(...variant.images);
+      }
+    });
+    return images;
+  }, [variants]);
+
+  // Track selected image for main display
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  // Get images from current variant
+  const productImages = useMemo(() => {
+    return currentVariant?.images || [];
+  }, [currentVariant]);
+
   // ✅ build variant key so same product with different size/color becomes different row
   const rowKey = useMemo(() => {
     const pid = foundData?._id ?? "no-product";
     const size = hasSizes ? normalize(selectedSize) || "no-size" : "no-size";
-    const color = hasColors ? normalize(selectedColor) || "no-color" : "no-color";
+    const color = hasColors
+      ? normalize(selectedColor) || "no-color"
+      : "no-color";
     return `${pid}__${size}__${color}`;
   }, [foundData?._id, selectedSize, selectedColor, hasSizes, hasColors]);
 
   const handleAddToCart = async () => {
     if (!userId) {
-      toast.error("Please login first!", { autoClose: 3000, position: "top-center" });
+      toast.error("Please login first!", {
+        autoClose: 3000,
+        position: "top-center",
+      });
       return;
     }
 
     // ✅ Only require what actually exists
     if (hasSizes && !selectedSize) {
-      toast.error("Please select a size!", { autoClose: 3000, position: "top-center" });
+      toast.error("Please select a size!", {
+        autoClose: 3000,
+        position: "top-center",
+      });
       return;
     }
     if (hasColors && !selectedColor) {
-      toast.error("Please select a color!", { autoClose: 3000, position: "top-center" });
+      toast.error("Please select a color!", {
+        autoClose: 3000,
+        position: "top-center",
+      });
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const mainImageUrl =
-        foundData?.images?.[0]?.asset ? urlForImage(foundData.images[0].asset).url() : null;
+      const mainImageUrl = productImages[0]?.url || "";
 
       // ✅ pass ALL useful attributes
       const payload = {
@@ -83,13 +132,13 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
         // product identity
         product_id: foundData?._id,
         product_title: foundData?.title ?? "",
-        product_slug: foundData?.slug?.current ?? null,
+        product_slug: foundData?.slug ?? null,
 
         // pricing + quantity
         // NOTE: you’re currently sending totalPrice = price * qty
         // If you want easier logic later, also send unit_price.
-        unit_price: Number(foundData?.price ?? 0),
-        product_price: Number(foundData?.price ?? 0) * num,
+        unit_price: Number(foundData?.basePrice ?? 0),
+        product_price: Number(foundData?.basePrice ?? 0) * num,
         product_quantity: num,
 
         // variations
@@ -100,19 +149,14 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
         row_key: rowKey,
 
         // product metadata
-        product_category: foundData?.category ?? null,
+        product_category: foundData?.collection ?? null,
         product_style: foundData?.style ?? null,
 
         // media
         image_url: mainImageUrl,
 
-        // optional extra info (only if you have them in sanity)
-        description: foundData?.description ?? null,
-        // images: Array.isArray(foundData?.images)
-        //   ? foundData.images
-        //       .map((img: any) => (img?.asset ? urlForImage(img.asset).url() : null))
-        //       .filter(Boolean)
-        //   : [],
+        // optional extra info
+        description: foundData?.shortDescription ?? null,
       };
 
       const res = await fetch("/api/cart", {
@@ -130,7 +174,9 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
       await refreshCart?.();
 
       // ✅ Get updated cart count after refresh
-      const cartRes = await fetch(`/api/cart?user_id=${userId}`, { cache: "no-store" });
+      const cartRes = await fetch(`/api/cart?user_id=${userId}`, {
+        cache: "no-store",
+      });
       if (cartRes.ok) {
         const cartData = await cartRes.json();
         const cartItems = Array.isArray(cartData) ? cartData : [];
@@ -159,8 +205,10 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
     } catch (error) {
       console.log(error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to add product to cart!",
-        { autoClose: 3000, position: "top-center" }
+        error instanceof Error
+          ? error.message
+          : "Failed to add product to cart!",
+        { autoClose: 3000, position: "top-center" },
       );
     } finally {
       setIsLoading(false);
@@ -170,43 +218,66 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
   if (!foundData) return null;
 
   return (
-    <div className="flex mt-16">
+    <div className="flex py-32">
       <div key={foundData._id}>
         {/* First Row */}
         <div className="flex">
           {/* Thumbnails */}
-          <div className="grid grid-cols-1 mr-8 gap-2">
-            {foundData?.images?.map((_imageObj: any, index: number) => (
-              <Image
-                key={_imageObj?.asset?._id || index}
-                src={urlForImage(_imageObj.asset).url()}
-                alt={_imageObj.alt || foundData.title || "Product image"}
-                width={100}
-                height={100}
-                className="rounded"
-              />
+          <div className="flex flex-col mr-8 gap-2">
+            {allProductImages?.map((_imageObj: any, index: number) => (
+              <button
+                key={_imageObj?.url || index}
+                onClick={() => setSelectedImageIndex(index)}
+              >
+                <Image
+                  src={_imageObj.url}
+                  alt={_imageObj.alt || foundData.title || "Product image"}
+                  width={100}
+                  height={100}
+                  // className="rounded"
+                  className={`rounded transition-all ${
+                    selectedImageIndex === index
+                      ? "ring-2 ring-gray-900 ring-offset-0"
+                      : "opacity-60 hover:opacity-100"
+                  }`}
+                />
+              </button>
             ))}
           </div>
 
           {/* Main Image */}
           <div className="w-[600px]">
-            <Image
-              src={urlForImage(foundData.images[0].asset).url()}
-              height={500}
-              width={400}
-              className="h-full w-full object-cover rounded"
-              alt={foundData.title}
-            />
+            {allProductImages[selectedImageIndex]?.url ? (
+              <Image
+                src={allProductImages[selectedImageIndex].url}
+                height={500}
+                width={400}
+                className="w-full h-auto object-contain rounded"
+                alt={foundData.title}
+              />
+            ) : (
+              <div className="h-[500px] w-full bg-gray-100 rounded flex items-center justify-center">
+                <span className="text-gray-400">No Image Available</span>
+              </div>
+            )}
           </div>
 
           {/* Details */}
           <div className="mt-16 ml-5">
-            <h1 className="text-2xl leading-8 -tracking-tighter">{foundData.title}</h1>
+            <h1 className="text-2xl leading-8 -tracking-tighter">
+              {foundData.title}
+            </h1>
 
-            {foundData?.category && (
+            {foundData?.collection && (
               <h2 className="text-lg text-gray-500 font-semibold opacity-50">
-                {titleCase(foundData.category)}
+                {foundData.collection}
               </h2>
+            )}
+
+            {foundData?.style && (
+              <p className="text-sm text-gray-600 mt-1">
+                Style: {foundData.style}
+              </p>
             )}
 
             {/* ✅ SIZE SELECTOR */}
@@ -289,19 +360,9 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
               <ToastContainer />
 
               <div className="font-bold text-2xl">
-                ${Number(foundData.price || 0).toFixed(2)}
+                ${Number(foundData.basePrice || 0).toFixed(2)}
               </div>
             </div>
-
-            {/* ✅ show selected variant in UI (optional but helpful) */}
-            {(hasSizes || hasColors) && (
-              <div className="mt-4 text-sm text-gray-600">
-                Selected:{" "}
-                {hasSizes ? `Size: ${selectedSize ?? "—"}` : null}
-                {hasSizes && hasColors ? " | " : null}
-                {hasColors ? `Color: ${selectedColor ?? "—"}` : null}
-              </div>
-            )}
           </div>
         </div>
 
@@ -311,15 +372,36 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
             <h3 className="font-extrabold text-[7.5rem] leading-[151px] text-paragraph opacity-[0.06] w-1/4 -z-10 absolute top-0">
               Overview
             </h3>
-            <h2 className="tracking-wider font-extrabold text-xl mt-1">Product Information</h2>
+            <h2 className="tracking-wider font-extrabold text-xl mt-1">
+              Product Information
+            </h2>
           </div>
 
           <div className="flex">
-            <div className="basis-1/3 tracking-wider font-bold text-grey">PRODUCT DETAILS</div>
+            <div className="basis-1/3 tracking-wider font-bold text-grey">
+              PRODUCT DETAILS
+            </div>
             <div className="basis-2/3 text-justify tracking-wider text-lg font-light">
-              {foundData.description}
+              {foundData.shortDescription || "No description available"}
             </div>
           </div>
+
+          {/* Product details from MongoDB */}
+          {foundData.details && foundData.details.length > 0 && (
+            <div className="space-y-4">
+              {foundData.details.map((detail: any, idx: number) => (
+                <div key={idx} className="flex">
+                  <div className="basis-1/3 tracking-wider font-bold text-grey uppercase">
+                    {detail.key}
+                  </div>
+                  <div
+                    className="basis-2/3 text-justify tracking-wider text-lg font-light"
+                    dangerouslySetInnerHTML={{ __html: detail.valueHtml }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

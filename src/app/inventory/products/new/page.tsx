@@ -26,7 +26,9 @@ export default function AddInventoryProductPage() {
     shortDescription: "",
     productCode: "",
     collection: "",
-    style: [] as string[],
+    collectionSlug: "",
+    style: "",
+    styleSlug: "",
     tags: [] as string[],
     purchasePrice: "",
     basePrice: "",
@@ -234,7 +236,7 @@ export default function AddInventoryProductPage() {
       errors.basicInfo = "Title is required.";
     } else if (!form.collection) {
       errors.basicInfo = "Collection is required.";
-    } else if (!form.style || form.style.length === 0) {
+    } else if (!form.style) {
       errors.basicInfo = "Style is required.";
     }
 
@@ -307,8 +309,13 @@ export default function AddInventoryProductPage() {
 
     setIsSaving(true);
 
+    const { collectionSlug, styleSlug, ...formWithoutSlugs } = form;
     const payload = {
-      ...form,
+      ...formWithoutSlugs,
+      collection: form.collection,
+      collectionSlug: form.collectionSlug,
+      style: form.style,
+      styleSlug: form.styleSlug,
       purchasePrice: Number(form.purchasePrice || 0),
       basePrice: Number(form.basePrice || 0),
       variants: form.variants.map((variant) => ({
@@ -489,12 +496,16 @@ export default function AddInventoryProductPage() {
                       : 'border-slate-200 focus:ring-blue-500'
                   }`}
                   value={form.collection}
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    const selectedCollection = collections.find(
+                      (c) => c.name === event.target.value
+                    );
                     setForm((prev) => ({
                       ...prev,
                       collection: event.target.value,
-                    }))
-                  }
+                      collectionSlug: selectedCollection?.slug || "",
+                    }));
+                  }}
                   disabled={loadingOptions}
                 >
                   <option value="">Select a collection</option>
@@ -523,17 +534,21 @@ export default function AddInventoryProductPage() {
                 </label>
                 <select
                   className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm ${
-                    validationErrors.basicInfo && form.style.length === 0
+                    validationErrors.basicInfo && !form.style
                       ? 'border-red-500 focus:ring-red-500'
                       : 'border-slate-200 focus:ring-blue-500'
                   }`}
-                  value={form.style[0] || ""}
-                  onChange={(event) =>
+                  value={form.style}
+                  onChange={(event) => {
+                    const selectedStyle = getAvailableStyles().find(
+                      (s) => s.name === event.target.value
+                    );
                     setForm((prev) => ({
                       ...prev,
-                      style: event.target.value ? [event.target.value] : [],
-                    }))
-                  }
+                      style: event.target.value,
+                      styleSlug: selectedStyle?.slug || "",
+                    }));
+                  }}
                   disabled={!form.collection || loadingOptions}
                 >
                   <option value="">

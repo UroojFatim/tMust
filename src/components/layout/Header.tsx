@@ -4,7 +4,7 @@ import logo from "/public/MustLogo.png";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Search, Menu, X } from "lucide-react";
 import Wrapper from "../shared/Wrapper";
 import CartButton from "../CartButton";
@@ -203,6 +203,7 @@ const Header = () => {
 
               <SheetContent side="left" className="bg-white overflow-y-auto">
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                <SheetDescription className="sr-only">Browse our collections and styles</SheetDescription>
                 <div className="flex items-center gap-2 mt-2">
                   <Image
                     src={logo}
@@ -222,7 +223,7 @@ const Header = () => {
                   </Link>
 
                   {/* Styles Section */}
-                  {styles.length > 0 && (
+                  {/* {styles.length > 0 && (
                     <div>
                       <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">
                         Styles
@@ -240,7 +241,7 @@ const Header = () => {
                         ))}
                       </ul>
                     </div>
-                  )}
+                  )} */}
 
                   {/* Collections Section */}
                   {collections.length > 0 && (

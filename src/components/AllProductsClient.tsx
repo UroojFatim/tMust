@@ -3,13 +3,11 @@
 import { useMemo, useState } from "react";
 import ProductCart from "@/components/ProductCart";
 import FiltersSidebar from "@/components/FiltersSidebar";
-import Link from "next/link";
 
 export default function AllProductsClient({ products }: { products: any[] }) {
-  const [price, setPrice] = useState([0, 500]);
+  const [price, setPrice] = useState([0, 5000]);
   const [sizes, setSizes] = useState<string[]>([]);
   const [colors, setColors] = useState<string[]>([]);
-  const [styles, setStyles] = useState<string[]>([]);
 
   const filteredProducts = useMemo(() => {
     console.log(products)
@@ -17,12 +15,14 @@ export default function AllProductsClient({ products }: { products: any[] }) {
       // Extract variants data
       const variants = p.variants || [];
       
-      // Get all colors from variants
-      const productColors = variants.map((v: any) => v.color).filter(Boolean);
+      // Get all colors from variants (lowercase for comparison)
+      const productColors = variants
+        .map((v: any) => v.color?.toLowerCase())
+        .filter(Boolean);
       
-      // Get all sizes from all variants
+      // Get all sizes from all variants (lowercase for comparison)
       const productSizes = variants
-        .flatMap((v: any) => (v.sizes || []).map((s: any) => s.size))
+        .flatMap((v: any) => (v.sizes || []).map((s: any) => s.size?.toLowerCase()))
         .filter(Boolean);
 
       const matchPrice =
@@ -30,18 +30,15 @@ export default function AllProductsClient({ products }: { products: any[] }) {
 
       const matchSize =
         sizes.length === 0 ||
-        sizes.some((s) => productSizes.includes(s));
+        sizes.some((s) => productSizes.includes(s.toLowerCase()));
 
       const matchColor =
         colors.length === 0 ||
-        colors.some((c) => productColors.includes(c));
+        colors.some((c) => productColors.includes(c.toLowerCase()));
 
-      const matchStyle =
-        styles.length === 0 || styles.includes(p.styleName);
-
-      return matchPrice && matchSize && matchColor && matchStyle;
+      return matchPrice && matchSize && matchColor;
     });
-  }, [products, price, sizes, colors, styles]);
+  }, [products, price, sizes, colors]);
 
   // Group products by style
   const groupedProducts = useMemo(() => {
@@ -68,8 +65,6 @@ export default function AllProductsClient({ products }: { products: any[] }) {
         setSizes={setSizes}
         colors={colors}
         setColors={setColors}
-        styles={styles}
-        setStyles={setStyles}
         total={filteredProducts.length}
       />
 
@@ -99,12 +94,11 @@ export default function AllProductsClient({ products }: { products: any[] }) {
               {/* Products Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
                 {styleProducts.map((product) => (
-                  <Link
+                  <ProductCart 
                     key={product._id}
-                    href={`/product/${product.slug}`}
-                  >
-                    <ProductCart item={product} />
-                  </Link>
+                    item={product}
+                    linkTo={`/product/${product.slug}`}
+                  />
                 ))}
               </div>
             </div>
