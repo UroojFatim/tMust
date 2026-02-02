@@ -3,10 +3,10 @@ import { getDatabase } from "@/lib/mongodb";
 
 export async function GET(
   request: Request,
-  { params }: { params: { collectionSlug: string } }
+  { params }: { params: Promise<{ collectionSlug: string }> }
 ) {
   try {
-    const { collectionSlug } = params;
+    const { collectionSlug } = await params;
     
     console.log("Fetching products for collection slug:", collectionSlug);
     

@@ -1,5 +1,6 @@
 import Wrapper from "@/components/shared/Wrapper";
 import MovingProducts from "@/components/MovingProducts";
+import Link from "next/link";
 
 export default function EthnicCollection() {
   return (
@@ -8,12 +9,12 @@ export default function EthnicCollection() {
         <div className="max-w-full">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Ethnic Collections</h3>
-            <a
+            <Link
               href="/collection/ethnic-collection"
               className="text-sm font-semibold text-brand-navy"
             >
               View All
-            </a>
+            </Link>
           </div>
 
           <div>

@@ -5,14 +5,14 @@ import { getInventorySession } from "@/lib/inventoryAuth";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = getInventorySession(request);
   if (!session) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
 
   if (!ObjectId.isValid(id)) {
     return NextResponse.json(
