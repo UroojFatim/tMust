@@ -8,7 +8,12 @@ export default function EthnicCollection() {
         <div className="max-w-full">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Ethnic Collections</h3>
-            <a href="/collection/ethnic-collection" className="text-sm font-semibold text-brand-navy">View All</a>
+            <a
+              href="/collection/ethnic-collection"
+              className="text-sm font-semibold text-brand-navy"
+            >
+              View All
+            </a>
           </div>
 
           <div>
