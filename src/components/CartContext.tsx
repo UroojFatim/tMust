@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 type CartContextType = {
@@ -39,7 +39,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // ✅ 2) refreshCart function (DB is source of truth)
-  const refreshCart = async () => {
+  const refreshCart = useCallback(async () => {
     try {
       if (!userId) return;
 
@@ -70,7 +70,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setCartItems([]);
       setCartItemCount(0);
     }
-  };
+  }, [userId]);
 
   // ✅ 3) When userId becomes available, refresh from API
   useEffect(() => {

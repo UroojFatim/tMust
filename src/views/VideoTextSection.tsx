@@ -3,6 +3,7 @@
 import React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function VideoTextSection() {
   const [animate, setAnimate] = useState(false);
@@ -93,10 +94,12 @@ export default function VideoTextSection() {
             </button>
 
             <div className="mt-6 p-3 border border-gray-300 inline-block text-left">
-              <img
+              <Image
                 src="/products/img5.jpeg"
                 alt="Sample product"
-                className="w-44 h-56 object-cover rounded"
+                width={176}
+                height={224}
+                className="object-cover rounded"
               />
 
               <div className="mt-3 text-sm font-medium">ROOP SAREE - BEIGE & PINK</div>

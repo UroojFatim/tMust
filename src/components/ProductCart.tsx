@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { FC, useMemo, useState } from "react";
 import Link from "next/link";
+import { urlForImage } from "../../sanity/lib/image";
 
 const colorClass: Record<string, string> = {
   black: "bg-black",
@@ -23,7 +24,7 @@ const ProductCard: FC<{ item: any, linkTo?: string, onColorSelect?: () => void }
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
   // Extract data from MongoDB product structure
-  const variants = item?.variants || [];
+  const variants = useMemo(() => item?.variants || [], [item?.variants]);
   const firstVariant = variants[0];
   
   // Get all unique colors from variants

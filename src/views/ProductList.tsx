@@ -9,7 +9,12 @@ export default function ProductList() {
         <div className="max-w-full">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Pashmina Collections</h3>
-            <Link href="/collection/pashmina-collection" className="text-sm font-semibold text-brand-navy">View All</Link>
+            <Link
+              href="/collection/pashmina-collection"
+              className="text-sm font-semibold text-brand-navy"
+            >
+              View All
+            </Link>
           </div>
 
           <div>

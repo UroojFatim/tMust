@@ -25,7 +25,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
   const [num, setNum] = useState(1);
 
   // ✅ Extract data from MongoDB structure (variants)
-  const variants = foundData?.variants || [];
+  const variants = useMemo(() => foundData?.variants || [], [foundData?.variants]);
 
   // Get all unique sizes from all variants
   const sizesFromSanity: string[] = useMemo(() => {

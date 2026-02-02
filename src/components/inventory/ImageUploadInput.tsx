@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 type ImageUploadInputProps = {
   value?: string;
@@ -94,9 +95,11 @@ export function ImageUploadInput({ value, onUpload }: ImageUploadInputProps) {
 
       {displayUrl && (
         <div className="mt-2">
-          <img
+          <Image
             src={displayUrl}
             alt="Preview"
+            width={80}
+            height={80}
             className="h-20 w-20 rounded-lg border border-slate-200 object-cover"
           />
         </div>

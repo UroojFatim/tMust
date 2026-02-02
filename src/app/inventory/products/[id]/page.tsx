@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { use, useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { LoadingSpinner } from "@/components/inventory/LoadingSpinner";
@@ -709,9 +710,11 @@ export default function InventoryProductDetailPage({
                         <div className="flex flex-wrap gap-3">
                           {variant.images.map((img: any, imgIndex: number) => (
                             <div key={imgIndex} className="h-20 w-20 overflow-hidden rounded-lg border">
-                              <img
+                              <Image
                                 src={img.url}
                                 alt={img.alt || "Product image"}
+                                width={80}
+                                height={80}
                                 className="h-full w-full object-cover"
                               />
                             </div>
