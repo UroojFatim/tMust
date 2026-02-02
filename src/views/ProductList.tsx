@@ -8,12 +8,17 @@ export default function ProductList() {
       <section className="py-10">
         <div className="max-w-full">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Pashimna Collections</h3>
-            <Link href="/category/pashimna" className="text-sm font-semibold text-brand-navy">View All</Link>
+            <h3 className="text-lg font-semibold">Pashmina Collections</h3>
+            <Link
+              href="/collection/pashmina-collection"
+              className="text-sm font-semibold text-brand-navy"
+            >
+              View All
+            </Link>
           </div>
 
           <div>
-            <MovingProducts />
+            <MovingProducts collectionSlug="pashmina-collection" />
           </div>
         </div>
       </section>
