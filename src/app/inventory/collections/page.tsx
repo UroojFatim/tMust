@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import { LoadingSpinner } from "@/components/inventory/LoadingSpinner";
 import { useInventorySession } from "@/components/inventory/useInventorySession";
 
@@ -15,6 +16,27 @@ export default function InventoryCollectionsPage() {
   const [fetching, setFetching] = useState(true);
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const handleSuccess = (message: string) => {
+    Swal.fire({
+      icon: "success",
+      title: "Success!",
+      text: message,
+      confirmButtonColor: "#10b981",
+    });
+  };
+
+  const handleError = (message: string) => {
+    Swal.fire({
+      icon: "error",
+      title: "Error!",
+      text: message,
+      confirmButtonColor: "#ef4444",
+    });
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -65,22 +87,35 @@ export default function InventoryCollectionsPage() {
 
       const data = await response.json();
       if (!response.ok) {
-        setError(data?.message || "Unable to add collection.");
+        handleError(data?.message || "Unable to add collection.");
         return;
       }
 
       setCollections((prev) => [data.collection, ...prev]);
       setName("");
       setSelectedStyles([]);
+      setSearchQuery("");
+      setCurrentPage(1);
+      handleSuccess("Collection Added Successfully");
     } catch (err) {
-      setError("Unable to add collection.");
+      handleError("Unable to add collection.");
     } finally {
       setCreating(false);
     }
   };
 
   const handleDelete = async (collectionId: string) => {
-    if (!confirm("Delete this collection?")) return;
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Delete this collection?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (!result.isConfirmed) return;
 
     setDeletingId(collectionId);
     try {
@@ -89,18 +124,31 @@ export default function InventoryCollectionsPage() {
       });
       if (!response.ok) {
         const data = await response.json();
-        setError(data?.message || "Failed to delete collection.");
+        handleError(data?.message || "Failed to delete collection.");
         setDeletingId(null);
         return;
       }
 
       setCollections((prev) => prev.filter((c) => c._id !== collectionId));
+      handleSuccess("Collection Deleted Successfully");
     } catch (err) {
-      setError("Failed to delete collection.");
+      handleError("Failed to delete collection.");
     } finally {
       setDeletingId(null);
     }
   };
+
+  // Search and filter logic
+  const filteredCollections = collections.filter((collection) =>
+    collection.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredCollections.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedCollections = filteredCollections.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   if (loading || fetching) {
     return <LoadingSpinner />;
@@ -174,7 +222,7 @@ export default function InventoryCollectionsPage() {
                   </p>
                 ) : (
                   styles.map((style) => (
-                    <label key={style._id} className="flex items-center gap-2">
+                    <label key={style._id} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition cursor-pointer">
                       <input
                         type="checkbox"
                         checked={selectedStyles.includes(style.name)}
@@ -185,9 +233,9 @@ export default function InventoryCollectionsPage() {
                               : prev.filter((value) => value !== style.name)
                           );
                         }}
-                        className="rounded border-slate-200"
+                        className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
                       />
-                      <span className="text-sm text-slate-700">{style.name}</span>
+                      <span className="text-sm text-slate-700 font-medium">{style.name}</span>
                     </label>
                   ))
                 )}
@@ -198,6 +246,18 @@ export default function InventoryCollectionsPage() {
         </div>
 
         <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
+          <div className="px-4 py-3 border-b border-slate-100">
+            <input
+              type="text"
+              placeholder="Search collections by name..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
           <table className="min-w-full text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500">
               <tr>
@@ -208,15 +268,15 @@ export default function InventoryCollectionsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {collections.length === 0 ? (
+              {filteredCollections.length === 0 ? (
                 <tr>
                   <td className="px-4 py-6 text-slate-500" colSpan={4}>
-                    No collections yet.
+                    {searchQuery ? "No collections match your search." : "No collections yet."}
                   </td>
                 </tr>
               ) : (
-                collections.map((collection) => (
-                  <tr key={collection._id}>
+                paginatedCollections.map((collection) => (
+                  <tr key={collection._id} className="hover:bg-slate-50 transition">
                     <td className="px-4 py-3 font-medium text-slate-900">
                       {collection.name}
                     </td>
@@ -230,7 +290,7 @@ export default function InventoryCollectionsPage() {
                       <button
                         onClick={() => handleDelete(collection._id)}
                         disabled={deletingId === collection._id}
-                        className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 transition"
                       >
                         {deletingId === collection._id ? "Deleting..." : "Delete"}
                       </button>
@@ -240,6 +300,45 @@ export default function InventoryCollectionsPage() {
               )}
             </tbody>
           </table>
+          {filteredCollections.length > 0 && (
+            <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3">
+              <div className="text-xs text-slate-500">
+                Showing {paginatedCollections.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to{" "}
+                {Math.min(currentPage * itemsPerPage, filteredCollections.length)} of {filteredCollections.length}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 transition"
+                >
+                  Previous
+                </button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`rounded-lg px-2 py-1 text-xs font-semibold transition ${
+                        currentPage === page
+                          ? "bg-blue-600 text-white"
+                          : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 transition"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

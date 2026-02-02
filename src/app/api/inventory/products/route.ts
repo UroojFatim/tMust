@@ -11,15 +11,63 @@ function slugify(value: string) {
     .replace(/-+/g, "-");
 }
 
-function generateSku(base: string, color: string, size: string) {
-  const clean = [base, color, size]
-    .filter(Boolean)
-    .join("-")
+function stripHtml(value: string) {
+  return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function abbreviate(value: string) {
+  const clean = String(value || "").trim();
+  if (!clean) return "NA";
+  const words = clean
     .toUpperCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^A-Z0-9-]/g, "");
-  const random = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `${clean}-${random}`.replace(/--+/g, "-");
+    .replace(/[^A-Z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (words.length === 1) {
+    return words[0].slice(0, 3);
+  }
+
+  return words.map((word) => word[0]).join("");
+}
+
+function normalizeSize(value: string) {
+  const clean = String(value || "").trim().toUpperCase();
+  const map: Record<string, string> = {
+    XS: "XS",
+    S: "S",
+    SM: "S",
+    SMALL: "S",
+    M: "M",
+    MEDIUM: "M",
+    L: "L",
+    LARGE: "L",
+    XL: "XL",
+    XXL: "XXL",
+    XXXL: "XXXL",
+  };
+  if (map[clean]) return map[clean];
+  if (clean.includes("EXTRA") && clean.includes("SMALL")) return "XS";
+  if (clean.includes("EXTRA") && clean.includes("LARGE")) return "XL";
+  return clean.replace(/[^A-Z0-9]/g, "").slice(0, 4) || "NA";
+}
+
+function generateSku(
+  category: string,
+  fabric: string,
+  style: string,
+  color: string,
+  size: string
+) {
+  const parts = [
+    "MUSTT",
+    abbreviate(category),
+    abbreviate(fabric),
+    abbreviate(style),
+    abbreviate(color),
+    normalizeSize(size),
+  ];
+  return parts.filter(Boolean).join("-");
 }
 
 function generateBarcode(sku: string) {
@@ -66,7 +114,22 @@ export async function POST(request: NextRequest) {
   }
 
   const slug = slugify(body.slug || title);
-  const baseCode = String(body.productCode || slug).toUpperCase();
+
+  const detailsArray = Array.isArray(body.details) ? body.details : [];
+  const fabricDetail = detailsArray.find((detail: any) =>
+    String(detail?.key || "")
+      .toLowerCase()
+      .trim()
+      .match(/fabric|material|work/)
+  );
+  const fabricValue = fabricDetail
+    ? stripHtml(String(fabricDetail.valueHtml || ""))
+    : "";
+
+  const category = String(body.collection || "").trim();
+  const styleValue = Array.isArray(body.style)
+    ? String(body.style[0] || "").trim()
+    : String(body.style || "").trim();
 
   const variants = (Array.isArray(body.variants) ? body.variants : []).map(
     (variant: any) => {
@@ -81,7 +144,7 @@ export async function POST(request: NextRequest) {
       const sizes = (Array.isArray(variant.sizes) ? variant.sizes : []).map(
         (sizeEntry: any) => {
           const size = String(sizeEntry.size || "").trim();
-          const sku = generateSku(baseCode, color, size);
+          const sku = generateSku(category, fabricValue, styleValue, color, size);
           const barcode = generateBarcode(sku);
           const label = `${title} ${color} ${size}`.trim();
 

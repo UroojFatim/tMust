@@ -28,11 +28,8 @@ const Footer = () => {
             </h3>
             <button>
               <ul className="space-y-2 mt-4 lg:text-xl text-start">
-                <li>Mew Arrivals</li>
+                <li>New Arrivals</li>
                 <li>Best Sellers</li>
-                <li>Casual Wears</li>
-                <li>Formal Wears</li>
-                <li>Traditional Wears</li>
               </ul>
             </button>
           </div>

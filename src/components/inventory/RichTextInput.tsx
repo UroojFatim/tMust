@@ -10,6 +10,7 @@ type RichTextInputProps = {
 export function RichTextInput({ value, onChange }: RichTextInputProps) {
   const editorRef = useRef<HTMLDivElement | null>(null);
   const isUpdatingRef = useRef(false);
+  const selectionRef = useRef<Range | null>(null);
 
   useEffect(() => {
     if (editorRef.current && value !== editorRef.current.innerHTML) {
@@ -19,8 +20,52 @@ export function RichTextInput({ value, onChange }: RichTextInputProps) {
     }
   }, [value]);
 
+  const saveSelection = () => {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      selectionRef.current = selection.getRangeAt(0);
+    }
+  };
+
+  const restoreSelection = () => {
+    const selection = window.getSelection();
+    if (selection && selectionRef.current) {
+      selection.removeAllRanges();
+      selection.addRange(selectionRef.current);
+    }
+  };
+
+  const ensureSelectionInEditor = () => {
+    if (!editorRef.current) return;
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      const range = document.createRange();
+      range.selectNodeContents(editorRef.current);
+      range.collapse(false);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      selectionRef.current = range;
+      return;
+    }
+
+    const currentRange = selection.getRangeAt(0);
+    if (!editorRef.current.contains(currentRange.commonAncestorContainer)) {
+      const range = document.createRange();
+      range.selectNodeContents(editorRef.current);
+      range.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      selectionRef.current = range;
+    }
+  };
+
   const exec = (command: string) => {
-    document.execCommand(command, false);
+    if (editorRef.current) {
+      editorRef.current.focus();
+      restoreSelection();
+      ensureSelectionInEditor();
+    }
+    document.execCommand(command, false, undefined);
     if (editorRef.current) {
       onChange(editorRef.current.innerHTML);
     }
@@ -38,6 +83,7 @@ export function RichTextInput({ value, onChange }: RichTextInputProps) {
         <button
           type="button"
           className="rounded px-2 py-1 text-slate-600 hover:bg-white"
+          onMouseDown={(event) => event.preventDefault()}
           onClick={() => exec("bold")}
         >
           <strong>B</strong>
@@ -45,6 +91,7 @@ export function RichTextInput({ value, onChange }: RichTextInputProps) {
         <button
           type="button"
           className="rounded px-2 py-1 text-slate-600 hover:bg-white"
+          onMouseDown={(event) => event.preventDefault()}
           onClick={() => exec("italic")}
         >
           <em>I</em>
@@ -52,23 +99,10 @@ export function RichTextInput({ value, onChange }: RichTextInputProps) {
         <button
           type="button"
           className="rounded px-2 py-1 text-slate-600 hover:bg-white"
+          onMouseDown={(event) => event.preventDefault()}
           onClick={() => exec("underline")}
         >
           <u>U</u>
-        </button>
-        <button
-          type="button"
-          className="rounded px-2 py-1 text-slate-600 hover:bg-white"
-          onClick={() => exec("insertUnorderedList")}
-        >
-          Bullets
-        </button>
-        <button
-          type="button"
-          className="rounded px-2 py-1 text-slate-600 hover:bg-white"
-          onClick={() => exec("insertOrderedList")}
-        >
-          Numbered
         </button>
       </div>
       <div
@@ -77,6 +111,9 @@ export function RichTextInput({ value, onChange }: RichTextInputProps) {
         contentEditable
         suppressContentEditableWarning
         onInput={handleInput}
+        onFocus={saveSelection}
+        onKeyUp={saveSelection}
+        onMouseUp={saveSelection}
       />
     </div>
   );

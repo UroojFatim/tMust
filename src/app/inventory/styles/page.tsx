@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import { LoadingSpinner } from "@/components/inventory/LoadingSpinner";
 import { useInventorySession } from "@/components/inventory/useInventorySession";
 
@@ -13,6 +14,27 @@ export default function InventoryStylesPage() {
   const [fetching, setFetching] = useState(true);
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const handleSuccess = (message: string) => {
+    Swal.fire({
+      icon: "success",
+      title: "Success!",
+      text: message,
+      confirmButtonColor: "#10b981",
+    });
+  };
+
+  const handleError = (message: string) => {
+    Swal.fire({
+      icon: "error",
+      title: "Error!",
+      text: message,
+      confirmButtonColor: "#ef4444",
+    });
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -55,21 +77,34 @@ export default function InventoryStylesPage() {
 
       const data = await response.json();
       if (!response.ok) {
-        setError(data?.message || "Unable to add style.");
+        handleError(data?.message || "Unable to add style.");
         return;
       }
 
       setStyles((prev) => [data.style, ...prev]);
       setName("");
+      setSearchQuery("");
+      setCurrentPage(1);
+      handleSuccess("Style Added Successfully");
     } catch (err) {
-      setError("Unable to add style.");
+      handleError("Unable to add style.");
     } finally {
       setCreating(false);
     }
   };
 
   const handleDelete = async (styleId: string) => {
-    if (!confirm("Delete this style?")) return;
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Delete this style?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (!result.isConfirmed) return;
 
     setDeletingId(styleId);
     try {
@@ -78,18 +113,31 @@ export default function InventoryStylesPage() {
       });
       if (!response.ok) {
         const data = await response.json();
-        setError(data?.message || "Failed to delete style.");
+        handleError(data?.message || "Failed to delete style.");
         setDeletingId(null);
         return;
       }
 
       setStyles((prev) => prev.filter((s) => s._id !== styleId));
+      handleSuccess("Style Deleted Successfully");
     } catch (err) {
-      setError("Failed to delete style.");
+      handleError("Failed to delete style.");
     } finally {
       setDeletingId(null);
     }
   };
+
+  // Search and filter logic
+  const filteredStyles = styles.filter((style) =>
+    style.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredStyles.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedStyles = filteredStyles.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   if (loading || fetching) {
     return <LoadingSpinner />;
@@ -153,6 +201,18 @@ export default function InventoryStylesPage() {
         </div>
 
         <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
+          <div className="px-4 py-3 border-b border-slate-100">
+            <input
+              type="text"
+              placeholder="Search styles by name..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
           <table className="min-w-full text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500">
               <tr>
@@ -162,15 +222,15 @@ export default function InventoryStylesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {styles.length === 0 ? (
+              {filteredStyles.length === 0 ? (
                 <tr>
                   <td className="px-4 py-6 text-slate-500" colSpan={3}>
-                    No styles yet.
+                    {searchQuery ? "No styles match your search." : "No styles yet."}
                   </td>
                 </tr>
               ) : (
-                styles.map((style) => (
-                  <tr key={style._id}>
+                paginatedStyles.map((style) => (
+                  <tr key={style._id} className="hover:bg-slate-50 transition">
                     <td className="px-4 py-3 font-medium text-slate-900">
                       {style.name}
                     </td>
@@ -179,7 +239,7 @@ export default function InventoryStylesPage() {
                       <button
                         onClick={() => handleDelete(style._id)}
                         disabled={deletingId === style._id}
-                        className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 transition"
                       >
                         {deletingId === style._id ? "Deleting..." : "Delete"}
                       </button>
@@ -189,6 +249,45 @@ export default function InventoryStylesPage() {
               )}
             </tbody>
           </table>
+          {filteredStyles.length > 0 && (
+            <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3">
+              <div className="text-xs text-slate-500">
+                Showing {paginatedStyles.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to{" "}
+                {Math.min(currentPage * itemsPerPage, filteredStyles.length)} of {filteredStyles.length}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 transition"
+                >
+                  Previous
+                </button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`rounded-lg px-2 py-1 text-xs font-semibold transition ${
+                        currentPage === page
+                          ? "bg-blue-600 text-white"
+                          : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 transition"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
