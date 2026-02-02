@@ -113,6 +113,25 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Validate collection and style
+  const collection = String(body.collection || "").trim();
+  const collectionSlug = String(body.collectionSlug || "").trim();
+  if (!collection || !collectionSlug) {
+    return NextResponse.json(
+      { ok: false, message: "Collection and collection slug are required" },
+      { status: 400 }
+    );
+  }
+
+  const style = String(body.style || "").trim();
+  const styleSlug = String(body.styleSlug || "").trim();
+  if (!style || !styleSlug) {
+    return NextResponse.json(
+      { ok: false, message: "Style and style slug are required" },
+      { status: 400 }
+    );
+  }
+
   const slug = slugify(body.slug || title);
 
   const detailsArray = Array.isArray(body.details) ? body.details : [];
@@ -126,7 +145,6 @@ export async function POST(request: NextRequest) {
     ? stripHtml(String(fabricDetail.valueHtml || ""))
     : "";
 
-  const category = String(body.collection || "").trim();
   const styleValue = Array.isArray(body.style)
     ? String(body.style[0] || "").trim()
     : String(body.style || "").trim();
@@ -144,7 +162,7 @@ export async function POST(request: NextRequest) {
       const sizes = (Array.isArray(variant.sizes) ? variant.sizes : []).map(
         (sizeEntry: any) => {
           const size = String(sizeEntry.size || "").trim();
-          const sku = generateSku(category, fabricValue, styleValue, color, size);
+          const sku = generateSku(collection, fabricValue, styleValue, color, size);
           const barcode = generateBarcode(sku);
           const label = `${title} ${color} ${size}`.trim();
 
@@ -171,10 +189,10 @@ export async function POST(request: NextRequest) {
     title,
     slug,
     shortDescription: String(body.shortDescription || "").trim(),
-    collection: String(body.collection || "").trim(),
-    collectionSlug: String(body.collectionSlug || "").trim(),
-    style: String(body.style || "").trim(),
-    styleSlug: String(body.styleSlug || "").trim(),
+    collection,
+    collectionSlug,
+    style,
+    styleSlug,
     tags: Array.isArray(body.tags) ? body.tags : [],
     details: Array.isArray(body.details)
       ? body.details
