@@ -1,81 +1,70 @@
 import Wrapper from "@/components/shared/Wrapper";
 import AllProductsClient from "@/components/AllProductsClient";
 import { notFound } from "next/navigation";
-
-function getBaseUrl() {
-  if (process.env.NEXT_PUBLIC_BASE_URL) {
-    return process.env.NEXT_PUBLIC_BASE_URL;
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  return 'http://localhost:3000';
-}
+import { getDatabase } from "@/lib/mongodb";
 
 async function getCollectionData(slug: string) {
   try {
-    const baseUrl = getBaseUrl();
-    const [collectionsRes, stylesRes, productsRes] = await Promise.all([
-      fetch(`${baseUrl}/api/public/collections`, { 
-        cache: 'no-store',
-        next: { revalidate: 0 }
-      }),
-      fetch(`${baseUrl}/api/public/styles`, { 
-        cache: 'no-store',
-        next: { revalidate: 0 }
-      }),
-      fetch(`${baseUrl}/api/public/products`, { 
-        cache: 'no-store',
-        next: { revalidate: 0 }
-      }),
+    const db = await getDatabase();
+    
+    // Fetch all data from MongoDB directly
+    const [collections, styles, products] = await Promise.all([
+      db.collection("inventory_collections").find({}).sort({ name: 1 }).toArray(),
+      db.collection("inventory_styles").find({}).sort({ name: 1 }).toArray(),
+      db.collection("inventory_products").find({}).sort({ createdAt: -1 }).toArray(),
     ]);
 
-    if (!collectionsRes.ok || !stylesRes.ok || !productsRes.ok) {
-      console.error('API fetch failed:', {
-        collections: collectionsRes.status,
-        styles: stylesRes.status,
-        products: productsRes.status
-      });
-      return null;
-    }
+    // Serialize MongoDB data
+    const collectionsData = collections.map((c: any) => ({
+      _id: c._id?.toString(),
+      name: c.name,
+      slug: c.slug,
+    }));
 
-    const collectionsData = await collectionsRes.json();
-    const stylesData = await stylesRes.json();
-    const productsData = await productsRes.json();
+    const stylesData = styles.map((s: any) => ({
+      _id: s._id?.toString(),
+      name: s.name,
+      slug: s.slug,
+    }));
 
-    console.log("productsData",productsData)
+    const productsData = products.map((p: any) => ({
+      _id: p._id?.toString(),
+      title: p.title,
+      slug: p.slug,
+      description: p.description,
+      basePrice: p.basePrice,
+      productCode: p.productCode,
+      collection: p.collection,
+      collectionSlug: p.collectionSlug,
+      style: p.style,
+      styleSlug: p.styleSlug,
+      variants: p.variants,
+      images: p.images,
+      createdAt: p.createdAt,
+    }));
+
     // Find matching collection or style
-    const collection = collectionsData.collections?.find((c: any) => c.slug === slug);
-    const style = stylesData.styles?.find((s: any) => s.slug === slug);
+    const collection = collectionsData.find((c: any) => c.slug === slug);
+    const style = stylesData.find((s: any) => s.slug === slug);
+    const matchedItem = collection || style;
 
-    if (!collection && !style) {
+    if (!matchedItem) {
       return null;
     }
-
-    const matchedItem = collection || style;
-    const products = productsData.products || [];
-    const allStyles = stylesData.styles || [];
 
     // Create a style lookup map
-    const styleMap = new Map(allStyles.map((s: any) => [s._id, s.name]));
-
-    console.log("Matched collection:", collection);
-    console.log("Matched style:", styleMap);
-    console.log("Total products:", products.length);
-    console.log("Sample product:", products[0]);
+    const styleMap = new Map(stylesData.map((s: any) => [s._id, s.name]));
 
     // Filter products by collection slug from URL
-    let filtered = products;
+    let filtered = productsData;
     
     if (collection) {
-      filtered = products.filter((product: any) => {
+      filtered = productsData.filter((product: any) => {
         // Try matching by collectionSlug first (new products)
         // Fall back to matching collection name with slug (old products)
         const matchesBySlug = product.collectionSlug === slug;
         const matchesByName = product.collection?.toLowerCase().replace(/\s+/g, '-') === slug;
-        const matches = matchesBySlug || matchesByName;
-        console.log(`Product ${product.title}: collectionSlug=${product.collectionSlug}, collection=${product.collection}, slug=${slug}, matches=${matches}`);
-        return matches;
+        return matchesBySlug || matchesByName;
       });
     }
 
