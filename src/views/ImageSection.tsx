@@ -3,16 +3,38 @@
 import React from 'react';
 import Image from 'next/image';
 
-export default function ImageSection({ src }: { src: string }) {
+interface ImageSectionProps {
+  desktopSrc: string;
+  mobileSrc: string;
+  alt?: string;
+}
+
+export default function ImageSection({
+  desktopSrc,
+  mobileSrc,
+  alt = 'Hero Image',
+}: ImageSectionProps) {
   return (
     <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-screen min-h-[400px] sm:min-h-[500px] md:min-h-[600px]">
+      
+      {/* Mobile Image */}
       <Image
-        src={src} // Using the passed image source here
-        alt="Hero"
+        src={mobileSrc}
+        alt={alt}
         fill
-        className="object-cover object-center sm:object-left"
         priority
         sizes="100vw"
+        className="object-cover object-center block md:hidden"
+      />
+
+      {/* Desktop Image */}
+      <Image
+        src={desktopSrc}
+        alt={alt}
+        fill
+        priority
+        sizes="100vh"
+        className="object-cover object-center hidden md:block"
       />
     </div>
   );
