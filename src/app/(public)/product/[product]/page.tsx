@@ -64,13 +64,6 @@ async function getProduct(slug: string): Promise<IProduct | null> {
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-export const dynamicParams = true;
-
-export async function generateStaticParams() {
-  // Return empty array to force dynamic rendering for all product pages
-  // This prevents build-time 500 errors when API routes aren't available
-  return [];
-}
 
 export default async function page({ params }: { params: Promise<{ product: string }> }) {
   const resolvedParams = await params;
