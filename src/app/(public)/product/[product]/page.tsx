@@ -36,34 +36,36 @@ interface IProduct {
   createdAt: string;
 }
 
-function getBaseUrl() {
-  if (process.env.NEXT_PUBLIC_BASE_URL) {
-    return process.env.NEXT_PUBLIC_BASE_URL;
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  return 'http://localhost:3000';
-}
-
 async function getProduct(slug: string): Promise<IProduct | null> {
   try {
-    const baseUrl = getBaseUrl();
-    const res = await fetch(
-      `${baseUrl}/api/public/products/${slug}`,
-      { 
-        cache: 'no-store',
-        next: { revalidate: 0 }
-      }
-    );
+    const { getDatabase } = await import("@/lib/mongodb");
+    const db = await getDatabase();
+    const product = await db
+      .collection("inventory_products")
+      .findOne({ slug });
 
-    if (!res.ok) {
-      console.error(`Failed to fetch product: ${res.status} ${res.statusText}`);
+    if (!product) {
+      console.error(`Product not found: ${slug}`);
       return null;
     }
 
-    const data = await res.json();
-    return data.product;
+    return {
+      _id: product._id?.toString(),
+      title: product.title,
+      slug: product.slug,
+      shortDescription: product.shortDescription,
+      description: product.description,
+      basePrice: product.basePrice,
+      productCode: product.productCode,
+      collection: product.collection,
+      collectionSlug: product.collectionSlug,
+      style: product.style,
+      styleSlug: product.styleSlug,
+      tags: product.tags,
+      details: product.details,
+      variants: product.variants,
+      createdAt: product.createdAt,
+    };
   } catch (error) {
     console.error("Error fetching product:", error);
     return null;

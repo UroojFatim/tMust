@@ -1,6 +1,6 @@
-import FetchData from "../../../../sanity/FetchData";
 import Wrapper from "@/components/shared/Wrapper";
 import AllProductsClient from "@/components/AllProductsClient";
+import { getDatabase } from "@/lib/mongodb";
 
 export async function generateStaticParams() {
   const categories = [
@@ -17,9 +17,32 @@ export async function generateStaticParams() {
 
 export default async function Page({ params }: { params: Promise<{ category: string }> }) {
   const { category } = await params;
-  const data = await FetchData();
+  
+  const db = await getDatabase();
+  const products = await db
+    .collection("inventory_products")
+    .find({})
+    .sort({ createdAt: -1 })
+    .toArray();
 
-  const filtered = data.filter((item: any) => item.category === category);
+  const serialized = products.map((product: any) => ({
+    _id: product._id?.toString(),
+    title: product.title,
+    slug: product.slug,
+    description: product.description,
+    basePrice: product.basePrice,
+    productCode: product.productCode,
+    collection: product.collection,
+    collectionSlug: product.collectionSlug,
+    style: product.style,
+    styleSlug: product.styleSlug,
+    variants: product.variants,
+    images: product.images,
+    category: product.category,
+    createdAt: product.createdAt,
+  }));
+
+  const filtered = serialized.filter((item: any) => item.category === category);
 
   return (
     <Wrapper>
