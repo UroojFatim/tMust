@@ -4,11 +4,32 @@ import { notFound } from "next/navigation";
 
 async function getCollectionData(slug: string) {
   try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                    (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+    
     const [collectionsRes, stylesRes, productsRes] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/public/collections`, { cache: 'no-store' }),
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/public/styles`, { cache: 'no-store' }),
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/public/products`, { cache: 'no-store' }),
+      fetch(`${baseUrl}/api/public/collections`, { 
+        cache: 'no-store',
+        next: { revalidate: 0 }
+      }),
+      fetch(`${baseUrl}/api/public/styles`, { 
+        cache: 'no-store',
+        next: { revalidate: 0 }
+      }),
+      fetch(`${baseUrl}/api/public/products`, { 
+        cache: 'no-store',
+        next: { revalidate: 0 }
+      }),
     ]);
+
+    if (!collectionsRes.ok || !stylesRes.ok || !productsRes.ok) {
+      console.error('API fetch failed:', {
+        collections: collectionsRes.status,
+        styles: stylesRes.status,
+        products: productsRes.status
+      });
+      return null;
+    }
 
     const collectionsData = await collectionsRes.json();
     const stylesData = await stylesRes.json();
@@ -76,35 +97,18 @@ async function getCollectionData(slug: string) {
   }
 }
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function generateStaticParams() {
-  try {
-    const [collectionsRes, stylesRes] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/public/collections`, { cache: 'no-store' }),
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/public/styles`, { cache: 'no-store' }),
-    ]);
-
-    const collectionsData = await collectionsRes.json();
-    const stylesData = await stylesRes.json();
-
-    const params = [];
-
-    if (collectionsData.collections) {
-      params.push(...collectionsData.collections.map((c: any) => ({ collection: c.slug })));
-    }
-
-    if (stylesData.styles) {
-      params.push(...stylesData.styles.map((s: any) => ({ collection: s.slug })));
-    }
-
-    return params;
-  } catch (error) {
-    console.error("Error generating static params:", error);
-    return [];
-  }
+  // Return empty array to force dynamic rendering for all collection pages
+  // This prevents build-time 500 errors when API routes aren't available
+  return [];
 }
 
 export default async function Page({ params }: { params: Promise<{ collection: string }> }) {
-  const { collection } = await params;
+  const resolvedParams = await params;
+  const { collection } = resolvedParams;
   const data = await getCollectionData(collection);
 
   if (!data) {

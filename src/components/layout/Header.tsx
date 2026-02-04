@@ -1,16 +1,20 @@
-"use client"
+"use client";
 
 import logo from "/public/MustLogo.png";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Search, Menu, X } from "lucide-react";
 import Wrapper from "../shared/Wrapper";
 import CartButton from "../CartButton";
 import { Input } from "@/components/ui/input";
-import FetchData from "../../../sanity/FetchData";
-import { urlForImage } from "../../../sanity/lib/image";
 
 interface NavItem {
   label: string;
@@ -25,6 +29,18 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [styles, setStyles] = useState<NavItem[]>([]);
   const [collections, setCollections] = useState<NavItem[]>([]);
+
+  const getProductImage = (product: any) => {
+    const img = product?.images?.[0];
+    if (typeof img === "string") return img;
+    if (img?.url) return img.url;
+    if (img?.asset?.url) return img.asset.url;
+    const variantImg = product?.variants?.[0]?.images?.[0];
+    if (typeof variantImg === "string") return variantImg;
+    if (variantImg?.url) return variantImg.url;
+    if (variantImg?.asset?.url) return variantImg.asset.url;
+    return "/products/placeholder.jpg";
+  };
 
   // Handle scroll event
   useEffect(() => {
@@ -63,10 +79,12 @@ const Header = () => {
 
         // Set collections
         if (collectionsData.ok && collectionsData.collections) {
-          const collectionItems = collectionsData.collections.map((collection: any) => ({
-            label: collection.name,
-            href: `/collection/${collection.slug}`,
-          }));
+          const collectionItems = collectionsData.collections.map(
+            (collection: any) => ({
+              label: collection.name,
+              href: `/collection/${collection.slug}`,
+            }),
+          );
           setCollections(collectionItems);
         }
       } catch (error) {
@@ -77,12 +95,16 @@ const Header = () => {
     fetchNavItems();
   }, []);
 
-  // Fetch products on mount
+  // Fetch products on mount (MongoDB public API)
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await FetchData();
-        setProducts(data);
+        const res = await fetch("/api/public/products", { cache: "no-store" });
+        if (!res.ok) {
+          throw new Error(`Failed to load products: ${res.status}`);
+        }
+        const data = await res.json();
+        setProducts(data.products || []);
       } catch (error) {
         console.error("Error fetching products:", error);
       }
@@ -97,11 +119,15 @@ const Header = () => {
       setFilteredProducts([]);
     } else {
       const query = searchQuery.toLowerCase();
-      const filtered = products.filter(
-        (product) =>
-          product.title.toLowerCase().includes(query) ||
-          product.category.toLowerCase().includes(query)
-      );
+      const filtered = products.filter((product) => {
+        const title = (product.title || "").toLowerCase();
+        const collection = (product.collection || "").toLowerCase();
+        const styleValue = product.style;
+        const style = Array.isArray(styleValue)
+          ? styleValue.join(" ").toLowerCase()
+          : (styleValue || "").toString().toLowerCase();
+        return title.includes(query) || collection.includes(query) || style.includes(query);
+      });
       setFilteredProducts(filtered);
     }
   }, [searchQuery, products]);
@@ -138,7 +164,7 @@ const Header = () => {
               {filteredProducts.slice(0, 5).map((product) => (
                 <Link
                   key={product._id}
-                  href={`/product/${product.slug.current}`}
+                  href={`/product/${product.slug}`}
                   onClick={() => {
                     setShowSearch(false);
                     setSearchQuery("");
@@ -146,7 +172,7 @@ const Header = () => {
                   className="flex gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer transition"
                 >
                   <Image
-                    src={urlForImage(product.images[0].asset).url()}
+                    src={getProductImage(product)}
                     alt={product.title}
                     width={50}
                     height={50}
@@ -156,7 +182,9 @@ const Header = () => {
                     <p className="text-sm font-semibold truncate">
                       {product.title}
                     </p>
-                    <p className="text-xs text-gray-500">${product.price}</p>
+                    <p className="text-xs text-gray-500">
+                      ${Number(product.basePrice || 0).toFixed(2)}
+                    </p>
                   </div>
                 </Link>
               ))}
@@ -176,22 +204,24 @@ const Header = () => {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.search-container')) {
+      if (!target.closest(".search-container")) {
         setShowSearch(false);
       }
     };
 
     if (showSearch) {
-      document.addEventListener('click', handleClickOutside);
+      document.addEventListener("click", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
     };
   }, [showSearch]);
 
   return (
-    <header className={`fixed top-0 inset-x-0 z-50 transition-colors duration-300 ${isScrolled ? "bg-white shadow-md" : "bg-transparent"}`}>
+    <header
+      className={`fixed top-0 inset-x-0 z-50 transition-colors duration-300 ${isScrolled ? "bg-white shadow-md" : "bg-transparent"}`}
+    >
       <Wrapper>
         <div className="flex items-center justify-between py-4 lg:py-5">
           {/* LEFT: Hamburger + Logo */}
@@ -203,7 +233,9 @@ const Header = () => {
 
               <SheetContent side="left" className="bg-white overflow-y-auto">
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                <SheetDescription className="sr-only">Browse our collections and styles</SheetDescription>
+                <SheetDescription className="sr-only">
+                  Browse our collections and styles
+                </SheetDescription>
                 <div className="flex items-center gap-2 mt-2">
                   <Image
                     src={logo}
@@ -216,8 +248,8 @@ const Header = () => {
                 <nav className="mt-8 space-y-6">
                   {/* All Products Link */}
                   <Link
-                    href="/AllProducts"
-                    className="block py-2 text-base font-semibold text-black hover:text-sky-600 transition-colors"
+                    href="/all-products"
+                    className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3"
                   >
                     All Products
                   </Link>
@@ -284,14 +316,14 @@ const Header = () => {
               <div
                 className={`flex items-center transition-all duration-300 ${
                   showSearch ? "w-64" : "w-0"
-                } overflow-hidden`}
+                } overflow-hidden bg-white rounded-lg`}
               >
                 <Input
                   type="text"
                   placeholder="Search products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full border border-black/20 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-[#212121]"
+                  className="w-full border border-black/20 rounded-lg py-4 px-4 text-sm focus:outline-none focus:border-[#212121] bg-white"
                   style={{ visibility: showSearch ? "visible" : "hidden" }}
                 />
               </div>
@@ -315,13 +347,15 @@ const Header = () => {
               {showSearch && searchQuery.trim() !== "" && (
                 <div className="absolute top-12 left-0 w-80 bg-white border border-black/20 rounded-lg shadow-lg z-50 p-4">
                   {filteredProducts.length === 0 ? (
-                    <p className="text-sm text-gray-500 py-4">No products found</p>
+                    <p className="text-sm text-gray-500 py-4">
+                      No products found
+                    </p>
                   ) : (
                     <div className="space-y-2">
                       {filteredProducts.slice(0, 5).map((product) => (
                         <Link
                           key={product._id}
-                          href={`/product/${product.slug.current}`}
+                          href={`/product/${product.slug}`}
                           onClick={() => {
                             setShowSearch(false);
                             setSearchQuery("");
@@ -329,7 +363,7 @@ const Header = () => {
                           className="flex gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer transition"
                         >
                           <Image
-                            src={urlForImage(product.images[0].asset).url()}
+                            src={getProductImage(product)}
                             alt={product.title}
                             width={50}
                             height={50}
@@ -339,7 +373,9 @@ const Header = () => {
                             <p className="text-sm font-semibold truncate">
                               {product.title}
                             </p>
-                            <p className="text-xs text-gray-500">${product.price}</p>
+                            <p className="text-xs text-gray-500">
+                              ${Number(product.basePrice || 0).toFixed(2)}
+                            </p>
                           </div>
                         </Link>
                       ))}
