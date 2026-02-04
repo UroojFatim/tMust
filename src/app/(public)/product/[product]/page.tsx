@@ -36,11 +36,19 @@ interface IProduct {
   createdAt: string;
 }
 
+function getBaseUrl() {
+  if (process.env.NEXT_PUBLIC_BASE_URL) {
+    return process.env.NEXT_PUBLIC_BASE_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'http://localhost:3000';
+}
+
 async function getProduct(slug: string): Promise<IProduct | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-                    (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
-    
+    const baseUrl = getBaseUrl();
     const res = await fetch(
       `${baseUrl}/api/public/products/${slug}`,
       { 

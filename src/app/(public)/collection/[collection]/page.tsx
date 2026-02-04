@@ -2,11 +2,19 @@ import Wrapper from "@/components/shared/Wrapper";
 import AllProductsClient from "@/components/AllProductsClient";
 import { notFound } from "next/navigation";
 
+function getBaseUrl() {
+  if (process.env.NEXT_PUBLIC_BASE_URL) {
+    return process.env.NEXT_PUBLIC_BASE_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'http://localhost:3000';
+}
+
 async function getCollectionData(slug: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-                    (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
-    
+    const baseUrl = getBaseUrl();
     const [collectionsRes, stylesRes, productsRes] = await Promise.all([
       fetch(`${baseUrl}/api/public/collections`, { 
         cache: 'no-store',
