@@ -2,26 +2,51 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import tMust2 from "../../public/hero_5.png";
-import tMust3 from "../../public/hero_3.png";
-import tMustHero from "../../public/hero_4.png";
+// Desktop images
+import desktopHero1 from "../../public/hero/hero_desktop_1.png";
+import desktopHero2 from "../../public/hero/hero_desktop_2.png";
+import desktopHero3 from "../../public/hero/hero_desktop_3.png";
+// Mobile images
+import mobileHero1 from "../../public/hero/hero_mobile_1.png";
+import mobileHero2 from "../../public/hero/hero_mobile_2.png";
+import mobileHero3 from "../../public/hero/hero_mobile_3.png";
 
-const slides = [
-  { src: tMust2, alt: "MUST collection slide 1" },
-  { src: tMust3, alt: "MUST collection slide 2" },
-  { src: tMustHero, alt: "MUST collection slide 3" },
+const desktopSlides = [
+  { src: desktopHero1, alt: "MUST collection slide 1" },
+  { src: desktopHero2, alt: "MUST collection slide 2" },
+  { src: desktopHero3, alt: "MUST collection slide 3" },
+];
+
+const mobileSlides = [
+  { src: mobileHero1, alt: "MUST collection slide 1" },
+  { src: mobileHero2, alt: "MUST collection slide 2" },
+  { src: mobileHero3, alt: "MUST collection slide 3" },
 ];
 
 const Hero = () => {
   const [index, setIndex] = useState(0);
-  const maxIndex = useMemo(() => Math.max(0, slides.length - 1), []);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect if screen is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const slides = isMobile ? mobileSlides : desktopSlides;
+  const maxIndex = useMemo(() => Math.max(0, slides.length - 1), [slides]);
 
   useEffect(() => {
     const t = setInterval(() => {
       setIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
     }, 5000);
     return () => clearInterval(t);
-  }, [ maxIndex]);
+  }, [maxIndex]);
 
   return (
     <section className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[calc(100vh-0px)] min-h-[400px] sm:min-h-[500px] md:min-h-[600px]">
