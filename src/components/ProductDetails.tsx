@@ -412,7 +412,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
                     Hurry! Only <span className="font-bold text-rose-900">{availableStock}</span> {availableStock === 1 ? 'piece' : 'pieces'} left in stock
                   </span>
                 </p>
-                <p className="text-xs sm:text-sm text-rose-600 mt-1 ml-7">Limited stock - Order now before it's gone!</p>
+                <p className="text-xs sm:text-sm text-rose-600 mt-1 ml-7">Limited stock - Order now before it&apos;s gone!</p>
               </div>
             )}
 
