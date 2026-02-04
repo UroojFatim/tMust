@@ -17,7 +17,7 @@ const SuccessPage = () => {
   }, [userId]);
 
   const handleContinueShopping = () => {
-    router.push("/AllProducts");
+    router.push("/all-products");
   };
 
   return (

@@ -5,11 +5,11 @@ import { Twitter, Facebook, Linkedin } from "lucide-react";
 import Link from "next/link";
 const Footer = () => {
   return (
-    <section className="mt-16 sm:mt-24 md:mt-32 lg:mt-40">
-      <div className="flex mb-12 sm:mb-16 md:mb-24 lg:mb-32 xl:mb-40 gap-y-8 sm:gap-y-10 gap-x-8 sm:gap-x-12 md:gap-x-16 lg:gap-x-24 lg:flex-row flex-col mx-4 px-4 sm:mx-6 sm:px-6 md:mx-10 md:px-10 xl:mx-16 xl:px-16">
+    <section className="mt-16 lg:mt-32">
+      <div className="flex mb-12 sm:mb-16 md:mb-24 lg:mb-32 gap-y-8 sm:gap-y-10 gap-x-8 sm:gap-x-12 md:gap-x-16 lg:gap-x-24 lg:flex-row flex-col mx-4 px-4 sm:mx-6 sm:px-6 md:mx-10 md:px-10 xl:mx-16 xl:px-16">
         {/* Left Div */}
         <div className="lg:basis-1/3 space-y-6 sm:space-y-8 lg:space-y-8">
-          <Image className="h-10 w-10 sm:h-12 sm:w-12" src={logo} alt="logo" />
+          <Image className="h-12 w-20" src={logo} alt="logo" />
           <p className="text-paragraph max-w-[280px] sm:max-w-sm md:max-w-md lg:max-w-xs xl:max-w-md 2xl:max-w-2xl text-sm sm:text-base lg:text-lg leading-relaxed">
             Small, artisan label that offers a thoughtfully curated collection
             of high quality everyday essentials made.
@@ -82,7 +82,15 @@ const Footer = () => {
           Design by. <b className="text-black">xyz Design Studio</b>
         </div> */}
         <div className="text-xs sm:text-sm md:text-base">
-          Powered by. <b className="text-black">EpicSphere</b>
+          Powered by.{" "}
+          <b className="text-black">
+            {" "}
+            <a
+              href="https://www.epic-sphere.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >Epic Sphere</a>
+          </b>
         </div>
       </div>
     </section>

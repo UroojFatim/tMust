@@ -13,12 +13,20 @@ export default async function Home() {
       <Hero></Hero>
       {/* <Promotions></Promotions> */}
       <ProductList></ProductList>
-      <ImageSection src="/hero_1.png"></ImageSection>
+      <ImageSection
+        desktopSrc="/hero/home_desktop_1.png"
+        mobileSrc="/hero/home_mobile_1.png"
+        alt="Hero Section 1"
+      />
       <VideoTextSection></VideoTextSection>
       <EthnicCollection />
       {/* <DifferentFromOthers></DifferentFromOthers> */}
       <Newsletter></Newsletter>
-      <ImageSection src="/hero_2.png"></ImageSection>
+      <ImageSection
+        desktopSrc="/hero/home_desktop_2.png"
+        mobileSrc="/hero/home_mobile_2.png"
+        alt="Hero Section 2"
+      />
     </section>
   );
 }

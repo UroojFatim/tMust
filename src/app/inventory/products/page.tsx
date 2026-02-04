@@ -53,9 +53,10 @@ export default function InventoryProductsPage() {
       const filtered = products.filter((product) => {
         const titleMatch = product.title?.toLowerCase().includes(query);
         const collectionMatch = product.collection?.toLowerCase().includes(query);
-        const styleMatch = Array.isArray(product.style) 
-          ? product.style.some((s: string) => s.toLowerCase().includes(query))
-          : false;
+        const styleValue = product.style;
+        const styleMatch = Array.isArray(styleValue)
+          ? styleValue.some((s: string) => s.toLowerCase().includes(query))
+          : String(styleValue || "").toLowerCase().includes(query);
         const codeMatch = product.productCode?.toLowerCase().includes(query);
         return titleMatch || collectionMatch || styleMatch || codeMatch;
       });
@@ -211,7 +212,7 @@ export default function InventoryProductsPage() {
                     <td className="px-4 py-3 text-slate-600">
                       {Array.isArray(product.style) && product.style.length
                         ? product.style.join(", ")
-                        : "—"}
+                        : product.style || "—"}
                     </td>
                     <td className="px-4 py-3 text-slate-600">{skuCount}</td>
                     <td className="px-4 py-3 text-slate-600">{units}</td>

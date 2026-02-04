@@ -38,48 +38,46 @@ interface IProduct {
 
 async function getProduct(slug: string): Promise<IProduct | null> {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/public/products/${slug}`,
-      { cache: 'no-store' }
-    );
+    const { getDatabase } = await import("@/lib/mongodb");
+    const db = await getDatabase();
+    const product = await db
+      .collection("inventory_products")
+      .findOne({ slug });
 
-    if (!res.ok) {
+    if (!product) {
+      console.error(`Product not found: ${slug}`);
       return null;
     }
 
-    const data = await res.json();
-    return data.product;
+    return {
+      _id: product._id?.toString(),
+      title: product.title,
+      slug: product.slug,
+      shortDescription: product.shortDescription,
+      description: product.description,
+      basePrice: product.basePrice,
+      productCode: product.productCode,
+      collection: product.collection,
+      collectionSlug: product.collectionSlug,
+      style: product.style,
+      styleSlug: product.styleSlug,
+      tags: product.tags,
+      details: product.details,
+      variants: product.variants,
+      createdAt: product.createdAt,
+    };
   } catch (error) {
     console.error("Error fetching product:", error);
     return null;
   }
 }
 
-export async function generateStaticParams() {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/public/products`,
-      { cache: 'no-store' }
-    );
-    
-    if (!res.ok) {
-      return [];
-    }
-
-    const data = await res.json();
-    const products = data.products || [];
-    
-    return products.map((item: any) => ({
-      product: item.slug,
-    }));
-  } catch (error) {
-    console.error("Error generating static params:", error);
-    return [];
-  }
-}
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function page({ params }: { params: Promise<{ product: string }> }) {
-  const { product } = await params;
+  const resolvedParams = await params;
+  const { product } = resolvedParams;
   const foundData = await getProduct(product);
 
   if (!foundData) {

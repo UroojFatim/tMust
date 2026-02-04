@@ -56,7 +56,7 @@ export default function AllProductsClient({ products }: { products: any[] }) {
   }, [filteredProducts]);
 
   return (
-    <div className="flex gap-10">
+    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 xl:gap-10">
       {/* LEFT FILTERS */}
       <FiltersSidebar
         price={price}
@@ -69,30 +69,30 @@ export default function AllProductsClient({ products }: { products: any[] }) {
       />
 
       {/* RIGHT PRODUCTS */}
-      <div className="flex-1">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold">All Products</h2>
-          <p className="text-sm text-gray-500">
+      <div className="flex-1 w-full">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold">All Products</h2>
+          <p className="text-xs sm:text-sm text-gray-500">
             {filteredProducts.length} products
           </p>
         </div>
 
         {/* Display products grouped by style */}
-        <div className="space-y-12">
+        <div className="space-y-8 sm:space-y-10 lg:space-y-12">
           {Object.entries(groupedProducts).map(([styleName, styleProducts]) => (
             <div key={styleName}>
               {/* Style Heading */}
-              <div className="mb-6 pb-3 border-b-2 border-gray-200">
-                <h3 className="text-xl font-bold text-gray-900 uppercase tracking-wide">
+              <div className="mb-4 sm:mb-6 pb-2 sm:pb-3 border-b-2 border-gray-200">
+                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 uppercase tracking-wide">
                   {styleName}
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-xs sm:text-sm text-gray-500 mt-1">
                   {styleProducts.length} {styleProducts.length === 1 ? 'product' : 'products'}
                 </p>
               </div>
 
               {/* Products Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-10">
                 {styleProducts.map((product) => (
                   <ProductCart 
                     key={product._id}
@@ -105,8 +105,8 @@ export default function AllProductsClient({ products }: { products: any[] }) {
           ))}
 
           {filteredProducts.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-gray-500 text-lg">No products found matching your filters.</p>
+            <div className="text-center py-10 sm:py-16 lg:py-20">
+              <p className="text-sm sm:text-base lg:text-lg text-gray-500">No products found matching your filters.</p>
             </div>
           )}
         </div>
