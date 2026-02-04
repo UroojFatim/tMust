@@ -43,7 +43,7 @@ export default async function Page() {
 
   return (
     <Wrapper>
-      <section className="py-8">
+      <section className="py-28 lg:py-32">
         <AllProductsClient products={productData} />
       </section>
     </Wrapper>

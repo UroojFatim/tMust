@@ -294,33 +294,146 @@ export default function InventoryProductDetailPage({
   };
 
   const printBarcode = (size: any, product: any) => {
-    const printWindow = window.open("", "", "height=400,width=600");
+    // Get variant info to display color
+    const variant = product.variants?.find((v: any) => 
+      v.sizes?.some((s: any) => s.sku === size.sku)
+    );
+    const colorName = variant?.color || "N/A";
+    
+    // Calculate final price (basePrice + priceDelta)
+    const basePrice = Number(product.basePrice || 0);
+    const priceDelta = Number(size.priceDelta || 0);
+    const finalPrice = (basePrice + priceDelta).toFixed(2);
+    
+    const printWindow = window.open("", "", "height=300,width=200");
     if (printWindow) {
       printWindow.document.write(`
         <html>
           <head>
-            <title>Barcode - ${product.title}</title>
+            <title>Label - ${product.title}</title>
             <style>
-              body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-              .barcode-container { display: flex; flex-direction: column; align-items: center; gap: 10px; page-break-after: always; }
-              .product-info { margin-top: 10px; font-size: 12px; }
-              canvas { border: 1px solid #000; }
-              @media print { body { margin: 0; padding: 10px; } }
+              @page {
+                size: 2in 3in;
+                margin: 0;
+              }
+              * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+              }
+              body { 
+                font-family: Arial, sans-serif; 
+                width: 2in;
+                height: 3in;
+                padding: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
+              .label-container {
+                width: 100%;
+                height: 100%;
+                border: 1px solid #000;
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                justify-content: center;
+                align-items: center;
+              }
+              .qr-section {
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 6px;
+              }
+              .info-section {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                width: 100%;
+              }
+              .product-name {
+                font-size: 10px;
+                font-weight: bold;
+                line-height: 1.2;
+                margin-bottom: 8px;
+                word-wrap: break-word;
+              }
+              .product-details {
+                font-size: 8px;
+                line-height: 1.5;
+                width: 100%;
+              }
+              .detail-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 3px;
+                padding: 2px 0;
+              }
+              .detail-label {
+                font-weight: 600;
+                color: #333;
+              }
+              .detail-value {
+                color: #000;
+                font-weight: 500;
+              }
+              .price {
+                font-size: 14px;
+                font-weight: bold;
+                margin-top: 8px;
+                color: #000;
+                padding: 4px 8px;
+                border-top: 1px solid #000;
+              }
+              canvas {
+                display: block;
+              }
+              @media print { 
+                body { 
+                  margin: 0;
+                  padding: 8px;
+                }
+              }
             </style>
           </head>
           <body>
-            <div id="barcode"></div>
-            <div class="product-info">
-              <p><strong>${product.title}</strong></p>
-              <p>SKU: ${size.sku}</p>
-              <p>Barcode: ${size.barcode}</p>
+            <div class="label-container">
+              <div class="qr-section">
+                <div id="barcode"></div>
+              </div>
+              <div class="info-section">
+                <div>
+                  <div class="product-name">${product.title}</div>
+                  <div class="product-details">
+                    <div class="detail-row">
+                      <span class="detail-label">SKU:</span>
+                      <span class="detail-value">${size.sku}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="detail-label">Color:</span>
+                      <span class="detail-value">${colorName}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="detail-label">Size:</span>
+                      <span class="detail-value">${size.size || "N/A"}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="price">$${finalPrice}</div>
+              </div>
             </div>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
             <script>
               new QRCode(document.getElementById('barcode'), {
                 text: '${typeof window !== "undefined" ? window.location.origin : "https://tmust.com"}/product/${product.slug}',
-                width: 200,
-                height: 200
+                width: 90,
+                height: 90
               });
               setTimeout(() => window.print(), 500);
             <\/script>
@@ -507,9 +620,9 @@ export default function InventoryProductDetailPage({
                 </select>
               ) : (
                 <span className="text-slate-900">
-                  {Array.isArray(product.style) && product.style.length
+                  {Array.isArray(product.style) 
                     ? product.style.join(", ")
-                    : "—"}
+                    : product.style || "—"}
                 </span>
               )}
             </div>

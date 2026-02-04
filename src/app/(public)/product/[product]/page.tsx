@@ -38,12 +38,19 @@ interface IProduct {
 
 async function getProduct(slug: string): Promise<IProduct | null> {
   try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                    (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+    
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/public/products/${slug}`,
-      { cache: 'no-store' }
+      `${baseUrl}/api/public/products/${slug}`,
+      { 
+        cache: 'no-store',
+        next: { revalidate: 0 }
+      }
     );
 
     if (!res.ok) {
+      console.error(`Failed to fetch product: ${res.status} ${res.statusText}`);
       return null;
     }
 
@@ -55,31 +62,18 @@ async function getProduct(slug: string): Promise<IProduct | null> {
   }
 }
 
-export async function generateStaticParams() {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/public/products`,
-      { cache: 'no-store' }
-    );
-    
-    if (!res.ok) {
-      return [];
-    }
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-    const data = await res.json();
-    const products = data.products || [];
-    
-    return products.map((item: any) => ({
-      product: item.slug,
-    }));
-  } catch (error) {
-    console.error("Error generating static params:", error);
-    return [];
-  }
+export async function generateStaticParams() {
+  // Return empty array to force dynamic rendering for all product pages
+  // This prevents build-time 500 errors when API routes aren't available
+  return [];
 }
 
 export default async function page({ params }: { params: Promise<{ product: string }> }) {
-  const { product } = await params;
+  const resolvedParams = await params;
+  const { product } = resolvedParams;
   const foundData = await getProduct(product);
 
   if (!foundData) {
