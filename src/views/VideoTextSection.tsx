@@ -99,7 +99,7 @@ export default function VideoTextSection() {
               />
 
               <div className="mt-2 sm:mt-3 text-xs sm:text-sm font-medium">SATRANGI POHNCHOS - BLACK</div>
-              <div className="text-lg sm:text-xl font-semibold">$ 2700</div>
+              <div className="text-lg sm:text-xl font-semibold">$ 450</div>
             </div>
           </div>
         </div>
