@@ -6,6 +6,7 @@ import Newsletter from "@/views/Newsletter";
 import ImageSection from "@/views/ImageSection";
 import VideoTextSection from "@/views/VideoTextSection";
 import EthnicCollection from "@/views/EthnicCollection";
+import ShopByCollection from "@/views/ShopByCollection";
 
 export default async function Home() {
   return (
@@ -17,6 +18,7 @@ export default async function Home() {
         mobileSrc="/hero/home_mobile_1.png"
         alt="Hero Section 1"
       />
+      <ShopByCollection />
       <EthnicCollection />
       <ImageSection
         desktopSrc="/hero/home_desktop_2.png"
@@ -24,7 +26,7 @@ export default async function Home() {
         alt="Hero Section 2"
       />
       <ProductList></ProductList>
-      <VideoTextSection></VideoTextSection>
+      {/* <VideoTextSection></VideoTextSection> */}
       {/* <DifferentFromOthers></DifferentFromOthers> */}
       {/* <Newsletter></Newsletter> */}
     </section>
