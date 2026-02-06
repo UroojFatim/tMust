@@ -21,7 +21,7 @@ export default async function Home() {
       <VideoTextSection></VideoTextSection>
       <EthnicCollection />
       {/* <DifferentFromOthers></DifferentFromOthers> */}
-      <Newsletter></Newsletter>
+      {/* <Newsletter></Newsletter> */}
       <ImageSection
         desktopSrc="/hero/home_desktop_2.png"
         mobileSrc="/hero/home_mobile_2.png"
