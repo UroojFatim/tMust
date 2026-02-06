@@ -9,24 +9,24 @@ import EthnicCollection from "@/views/EthnicCollection";
 
 export default async function Home() {
   return (
-    <section className="">
+    <section>
       <Hero></Hero>
       {/* <Promotions></Promotions> */}
-      <ProductList></ProductList>
       <ImageSection
         desktopSrc="/hero/home_desktop_1.png"
         mobileSrc="/hero/home_mobile_1.png"
         alt="Hero Section 1"
       />
-      <VideoTextSection></VideoTextSection>
       <EthnicCollection />
-      {/* <DifferentFromOthers></DifferentFromOthers> */}
-      {/* <Newsletter></Newsletter> */}
       <ImageSection
         desktopSrc="/hero/home_desktop_2.png"
         mobileSrc="/hero/home_mobile_2.png"
         alt="Hero Section 2"
       />
+      <ProductList></ProductList>
+      <VideoTextSection></VideoTextSection>
+      {/* <DifferentFromOthers></DifferentFromOthers> */}
+      {/* <Newsletter></Newsletter> */}
     </section>
   );
 }
