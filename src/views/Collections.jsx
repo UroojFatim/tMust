@@ -5,9 +5,9 @@ import { motion } from "framer-motion";
 export default function Collections() {
   const items = [
     { title: "Luxury", image: "/collections/luxury.png" },
-    { title: "Semi Formal", image: "/collections/riwayat.png" },
-    { title: "Ethnic Collection", image: "/collections/satrangi.png" },
-    { title: "Smart Casual Collection", image: "/collections/satrangi.png" },
+    { title: "Semi Formal", image: "/collections/semiformal.png" },
+    { title: "Ethnic Collection", image: "/collections/Ethnic.png" },
+    { title: "Smart Casual Collection", image: "/collections/smartcasual.png" },
   ];
 
   return (
@@ -20,9 +20,9 @@ export default function Collections() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: false, amount: 0.3 }}   // 🔁 animate every time
-          className="text-3xl md:text-4xl font-semibold mb-12"
+          className="font-PT_Serif text-3xl md:text-4xl font-semibold mb-12"
         >
-          Collections
+          SHOP BY COLLECTIONS
         </motion.h2>
 
         {/* Circles */}
