@@ -3,12 +3,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 // Desktop images
-import desktopHero1 from "../../public/hero/hero_desktop_1.png";
-import desktopHero2 from "../../public/hero/hero_desktop_2.png";
-import desktopHero3 from "../../public/hero/hero_desktop_3.png";
+import desktopHero1 from "../../public/hero/herosection.png";
+import desktopHero2 from "../../public/hero/herosection2.png";
+import desktopHero3 from "../../public/hero/herosection3.png";
 // Mobile images
-import mobileHero1 from "../../public/hero/hero_mobile_1.png";
-import mobileHero2 from "../../public/hero/hero_mobile_2.png";
+import mobileHero1 from "../../public/hero/heromobile.png";
+import mobileHero2 from "../../public/hero/heromobile2.png";
 import mobileHero3 from "../../public/hero/hero_mobile_3.png";
 
 const desktopSlides = [

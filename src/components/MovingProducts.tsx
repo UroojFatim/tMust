@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import ProductCard from "@/components/ProductCart";
+import Image from "next/image";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Link from "next/link";
 
@@ -10,8 +10,30 @@ interface MovingProductsProps {
   collectionSlug: string;
 }
 
+interface StyleCardItem {
+  name: string;
+  slug: string;
+  imageUrl?: string | null;
+  productCount: number;
+  colors: string[];
+}
+
+const colorClass: Record<string, string> = {
+  black: "bg-black",
+  white: "bg-white border",
+  navy: "bg-blue-900",
+  gray: "bg-gray-400",
+  pink: "bg-pink-300",
+  red: "bg-red-500",
+  blue: "bg-blue-500",
+  beige: "bg-[#e7d3b1]",
+  brown: "bg-amber-700",
+  orange: "bg-orange-500",
+  "dark brown": "bg-amber-900",
+};
+
 export default function MovingProducts({ collectionSlug }: MovingProductsProps) {
-  const [data, setData] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -50,14 +72,14 @@ export default function MovingProducts({ collectionSlug }: MovingProductsProps) 
         
         if (result.ok && result.products) {
           console.log(`Received ${result.products.length} products`);
-          setData(result.products);
+          setProducts(result.products);
         } else {
           console.error("Failed to fetch products:", result.message);
-          setData([]);
+          setProducts([]);
         }
       } catch (error) {
         console.error("Error fetching products:", error);
-        setData([]);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -68,13 +90,69 @@ export default function MovingProducts({ collectionSlug }: MovingProductsProps) 
     }
   }, [collectionSlug]);
 
-  const maxIndex = useMemo(() => {
-    if (!data.length) return 0;
-    return Math.max(0, data.length - itemsToShow);
-  }, [data.length, itemsToShow]);
+  const styleItems = useMemo<StyleCardItem[]>(() => {
+    if (!products.length) return [];
+    const map = new Map<string, StyleCardItem>();
 
-  // help TS accept extended ProductCard props
-  const PC: any = ProductCard;
+    const toSlug = (value: string) =>
+      value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
+
+    products.forEach((product) => {
+      const styleName =
+        typeof product?.style === "string"
+          ? product.style
+          : Array.isArray(product?.style)
+            ? product.style[0]
+            : "";
+      const slug = product?.styleSlug || (styleName ? toSlug(styleName) : "");
+
+      if (!styleName || !slug) return;
+
+      const imageUrl =
+        product?.variants?.[0]?.images?.[0]?.url ||
+        product?.images?.[0]?.url ||
+        null;
+
+      const existing = map.get(slug) ?? {
+        name: styleName,
+        slug,
+        imageUrl,
+        productCount: 0,
+        colors: [] as string[],
+      };
+
+      existing.productCount += 1;
+
+      if (!existing.imageUrl && imageUrl) {
+        existing.imageUrl = imageUrl;
+      }
+
+      const colors: string[] = (product?.variants || [])
+        .map((variant: any) => variant?.color)
+        .filter(Boolean)
+        .map((color: string) => color.toLowerCase().trim());
+
+      colors.forEach((color) => {
+        if (!existing.colors.includes(color)) {
+          existing.colors.push(color);
+        }
+      });
+
+      map.set(slug, existing);
+    });
+
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [products]);
+
+  const maxIndex = useMemo(() => {
+    if (!styleItems.length) return 0;
+    return Math.max(0, styleItems.length - itemsToShow);
+  }, [styleItems.length, itemsToShow]);
 
   // keep index in range when itemsToShow changes
   useEffect(() => {
@@ -82,12 +160,12 @@ export default function MovingProducts({ collectionSlug }: MovingProductsProps) 
   }, [maxIndex]);
 
   useEffect(() => {
-    if (!data.length || paused) return;
+    if (!styleItems.length || paused) return;
     const t = setInterval(() => {
       setIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
     }, 3000);
     return () => clearInterval(t);
-  }, [data.length, paused, maxIndex]);
+  }, [styleItems.length, paused, maxIndex]);
 
   // pause autoplay for a short time (ms)
   const pauseFor = (ms = 1500) => {
@@ -112,10 +190,10 @@ export default function MovingProducts({ collectionSlug }: MovingProductsProps) 
     return <LoadingSpinner />;
   }
 
-  if (!data.length) {
+  if (!styleItems.length) {
     return (
       <div className="text-center py-8 text-gray-500">
-        No products found for this collection.
+        No styles found for this collection.
       </div>
     );
   }
@@ -136,13 +214,79 @@ export default function MovingProducts({ collectionSlug }: MovingProductsProps) 
             transform: `translateX(calc(-${index} * (100% / ${itemsToShow})))`,
           }}
         >
-          {data.map((item, i) => (
+          {styleItems.map((item, i) => (
             <div
-              key={item?.id ?? i}
+              key={item?.slug ?? i}
               className="shrink-0 px-2"
               style={{ width: `calc(100% / ${itemsToShow})` }}
             >
-              <PC item={item} linkTo={`/product/${item.slug}`} onColorSelect={() => pauseFor(1500)} />
+              <Link
+                href={`/collection/${item.slug}`}
+                className="group relative block h-full overflow-hidden rounded-2xl border border-brand-sky_dark/60 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl"
+                onClick={() => pauseFor(1500)}
+              >
+                <div className="relative aspect-[4/5] overflow-hidden bg-brand-sky_light">
+                  {item.imageUrl ? (
+                    <Image
+                      src={item.imageUrl}
+                      alt={`${item.name} style`}
+                      fill
+                      className="object-cover object-top transition duration-700 group-hover:scale-[1.05]"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-sm text-slate-500">
+                      Style preview coming soon
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/70 via-brand-navy/10 to-transparent opacity-0 transition group-hover:opacity-100" />
+                  <div className="absolute left-3 top-3 rounded-full border border-white/70 bg-white/90 px-3 py-1 text-xs font-semibold text-brand-navy backdrop-blur">
+                    Style
+                  </div>
+                </div>
+
+                <div className="space-y-3 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-base font-semibold text-brand-navy leading-snug">
+                      {item.name}
+                    </h3>
+                    <span className="rounded-full border border-brand-sky_dark/60 bg-brand-sky_light px-2.5 py-1 text-xs font-semibold text-brand-navy">
+                      {item.productCount} items
+                    </span>
+                  </div>
+
+                  {item.colors.length > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      {item.colors.slice(0, 5).map((color, colorIndex) => {
+                        const normalizedColor = color.replace(/\s+/g, " ");
+                        return (
+                          <span
+                            key={`${item.slug}-${color}-${colorIndex}`}
+                            className={`h-3 w-3 rounded-full border ${
+                              colorClass[normalizedColor] ?? "bg-slate-200"
+                            }`}
+                            title={color}
+                          />
+                        );
+                      })}
+                      {item.colors.length > 5 && (
+                        <span className="text-xs font-semibold text-slate-500">
+                          +{item.colors.length - 5}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  <p className="text-sm text-slate-600 line-clamp-2">
+                    Explore {item.name} pieces curated for this collection.
+                  </p>
+
+                  <div className="inline-flex items-center gap-2 text-sm font-semibold text-brand-navy">
+                    Explore style
+                    <span className="transition group-hover:translate-x-1">→</span>
+                  </div>
+                </div>
+              </Link>
             </div>
           ))}
         </div>

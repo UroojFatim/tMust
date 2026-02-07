@@ -6,27 +6,29 @@ import Newsletter from "@/views/Newsletter";
 import ImageSection from "@/views/ImageSection";
 import VideoTextSection from "@/views/VideoTextSection";
 import EthnicCollection from "@/views/EthnicCollection";
+import ShopByCollection from "@/views/ShopByCollection";
 
 export default async function Home() {
   return (
-    <section className="">
+    <section>
       <Hero></Hero>
       {/* <Promotions></Promotions> */}
-      <ProductList></ProductList>
       <ImageSection
         desktopSrc="/hero/home_desktop_1.png"
         mobileSrc="/hero/home_mobile_1.png"
         alt="Hero Section 1"
       />
-      <VideoTextSection></VideoTextSection>
+      <ShopByCollection />
       <EthnicCollection />
-      {/* <DifferentFromOthers></DifferentFromOthers> */}
-      <Newsletter></Newsletter>
       <ImageSection
         desktopSrc="/hero/home_desktop_2.png"
         mobileSrc="/hero/home_mobile_2.png"
         alt="Hero Section 2"
       />
+      <ProductList></ProductList>
+      {/* <VideoTextSection></VideoTextSection> */}
+      {/* <DifferentFromOthers></DifferentFromOthers> */}
+      {/* <Newsletter></Newsletter> */}
     </section>
   );
 }
