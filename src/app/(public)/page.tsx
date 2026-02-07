@@ -8,13 +8,14 @@ import VideoTextSection from "@/views/VideoTextSection";
 import EthnicCollection from "@/views/EthnicCollection";
 import ShopByCollection from "@/views/ShopByCollection";
 import Collections from "@/views/Collections";
+import UnderConstruction from "../under-construction/page";
 
 export default async function Home() {
   return (
     <section>
-      <Hero></Hero>
+      {/* <Hero></Hero> */}
       {/* <Promotions></Promotions> */}
-      <ShopByCollection />
+      {/* <ShopByCollection />
       <Collections/>
       <ImageSection
         desktopSrc="/hero/home_desktop_1.png"
@@ -27,10 +28,11 @@ export default async function Home() {
         mobileSrc="/hero/home_mobile_2.png"
         alt="Hero Section 2"
       />
-      <ProductList></ProductList>
+      <ProductList></ProductList> */}
       {/* <VideoTextSection></VideoTextSection> */}
       {/* <DifferentFromOthers></DifferentFromOthers> */}
       {/* <Newsletter></Newsletter> */}
+      <UnderConstruction/>
     </section>
   );
 }
