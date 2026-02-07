@@ -3,12 +3,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 // Desktop images
-import desktopHero1 from "../../public/hero/herosection.png";
-import desktopHero2 from "../../public/hero/herosection2.png";
-import desktopHero3 from "../../public/hero/herosection3.png";
+import desktopHero1 from "../../public/hero/hero_desktop_1.png";
+import desktopHero2 from "../../public/hero/hero_desktop_2.png";
+import desktopHero3 from "../../public/hero/hero_desktop_3.png";
 // Mobile images
-import mobileHero1 from "../../public/hero/heromobile.png";
-import mobileHero2 from "../../public/hero/heromobile2.png";
+import mobileHero1 from "../../public/hero/hero_mobile_1.png";
+import mobileHero2 from "../../public/hero/hero_mobile_2.png";
 import mobileHero3 from "../../public/hero/hero_mobile_3.png";
 
 const desktopSlides = [
@@ -49,7 +49,8 @@ const Hero = () => {
   }, [maxIndex]);
 
   return (
-    <section className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[calc(100vh-0px)] min-h-[400px] sm:min-h-[500px] md:min-h-[600px]">
+    <section className="relative w-full h-[calc(100svh-70px)] md:h-[calc(100vh-90px)] min-h-[520px] md:min-h-[650px]">
+
       <div
         className="absolute inset-0 z-0"
       >
