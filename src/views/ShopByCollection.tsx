@@ -139,10 +139,10 @@ export default function ShopByCollection() {
   return (
     <Wrapper noGutters>
       <section className="py-10">
-        <div className="rounded-[32px] bg-[#f7f8fb] px-6 py-8">
+        <div className="rounded-[32px] px-6 py-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
             <div className="shrink-0">
-              <p className="text-[11px] font-PT_Serif tracking-[0.45em] text-brand-navy/80">
+              <p className="text-[11px] font-PT_Serif tracking-[0.45em]">
                 SHOP BY COLLECTION
               </p>
             </div>

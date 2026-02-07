@@ -7,18 +7,20 @@ import ImageSection from "@/views/ImageSection";
 import VideoTextSection from "@/views/VideoTextSection";
 import EthnicCollection from "@/views/EthnicCollection";
 import ShopByCollection from "@/views/ShopByCollection";
+import Collections from "@/views/Collections";
 
 export default async function Home() {
   return (
     <section>
       <Hero></Hero>
       {/* <Promotions></Promotions> */}
+      <ShopByCollection />
+      <Collections/>
       <ImageSection
         desktopSrc="/hero/home_desktop_1.png"
         mobileSrc="/hero/home_mobile_1.png"
         alt="Hero Section 1"
       />
-      <ShopByCollection />
       <EthnicCollection />
       <ImageSection
         desktopSrc="/hero/home_desktop_2.png"
