@@ -8,9 +8,9 @@ export default function ProductList() {
       <section className="py-10">
         <div className="max-w-full">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Pashmina Collections</h3>
+            <h3 className="text-lg font-semibold">Luxury Collections</h3>
             <Link
-              href="/collection/pashmina-collection"
+              href="/collection/luxury-collection"
               className="text-sm font-semibold text-brand-navy"
             >
               View All
@@ -18,7 +18,7 @@ export default function ProductList() {
           </div>
 
           <div>
-            <MovingProducts collectionSlug="pashmina-collection" />
+            <MovingProducts collectionSlug="luxury-collection" />
           </div>
         </div>
       </section>
