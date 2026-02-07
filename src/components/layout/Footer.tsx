@@ -2,13 +2,14 @@ import logo from "/public/MustLogo.png";
 import React from "react";
 import Image from "next/image";
 import { Twitter, Facebook, Linkedin } from "lucide-react";
-import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 const Footer = () => {
   return (
     <section className="mt-16 lg:mt-32">
-      <div className="flex mb-12 sm:mb-16 md:mb-24 lg:mb-32 gap-y-8 sm:gap-y-10 gap-x-8 sm:gap-x-12 md:gap-x-16 lg:gap-x-24 lg:flex-row flex-col mx-4 px-4 sm:mx-6 sm:px-6 md:mx-10 md:px-10 xl:mx-16 xl:px-16">
+      <div className="mx-auto mb-12 flex max-w-7xl flex-col gap-8 px-4 sm:mb-16 sm:gap-10 sm:px-6 md:mb-24 lg:mb-32 lg:flex-row lg:gap-16 lg:px-8">
         {/* Left Div */}
-        <div className="lg:basis-1/3 space-y-6 sm:space-y-8 lg:space-y-8">
+        <div className="w-full space-y-6 sm:space-y-8 lg:basis-1/3">
           <Image className="h-12 w-20" src={logo} alt="logo" />
           <p className="text-paragraph max-w-[280px] sm:max-w-sm md:max-w-md lg:max-w-xs xl:max-w-md 2xl:max-w-2xl text-sm sm:text-base lg:text-lg leading-relaxed">
             Small, artisan label that offers a thoughtfully curated collection
@@ -21,7 +22,7 @@ const Footer = () => {
           </div>
         </div>
         {/* Right Div */}
-        <div className="lg:basis-2/3 grid grid-cols-1 sm:grid-cols-2 gap-y-8 sm:gap-y-10 gap-x-8 sm:gap-x-12 md:gap-x-16 text-grey">
+        <div className="w-full grid grid-cols-1 gap-8 text-grey sm:grid-cols-2 sm:gap-10 lg:basis-2/3">
           <div>
             <h3 className="font-bold text-lg sm:text-xl lg:text-2xl tracking-wide">
               Shop
@@ -35,27 +36,20 @@ const Footer = () => {
           </div>
           <div>
             <h3 className="font-bold text-lg sm:text-xl lg:text-2xl tracking-wide">
-              Customer Service
+              Subscribe to Newsletter
             </h3>
-            <button>
-              <ul className="space-y-2 sm:space-y-2.5 mt-3 sm:mt-4 text-sm sm:text-base lg:text-lg xl:text-xl text-start">
-                <li className="hover:text-black transition-colors">
-                  Contact Us
-                </li>
-                <li className="hover:text-black transition-colors">
-                  Shipping Information
-                </li>
-                <li className="hover:text-black transition-colors">
-                  Return and Exchange
-                </li>
-                <li className="hover:text-black transition-colors">
-                  Size Guide
-                </li>
-                <li className="hover:text-black transition-colors">
-                  Track Order
-                </li>
-              </ul>
-            </button>
+            <p className="text-sm sm:text-base mt-3 sm:mt-4 text-paragraph">
+              Get the latest information and promo offers directly
+            </p>
+            <div className="mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center lg:flex-col lg:items-stretch xl:flex-row xl:items-center">
+              <Input
+                placeholder="Input email address"
+                className="border-black border w-full min-w-0 sm:flex-1 py-4 px-4 rounded-none opacity-70 tracking-tighter text-sm"
+              />
+              <Button className="text-white px-8 py-4 w-full sm:w-auto whitespace-nowrap">
+                Get Started
+              </Button>
+            </div>
           </div>
           {/* <div>
             <h3 className="font-bold text-xl lg:text-2xl tracking-wide">
@@ -74,7 +68,7 @@ const Footer = () => {
       <div className="border-black border-t-[0.75px] w-full"></div>
 
       {/* Bottom */}
-      <div className="flex lg:flex-row flex-col justify-between gap-y-4 sm:gap-y-6 text-[#666] my-4 sm:my-5 lg:my-6 mx-4 px-4 sm:mx-6 sm:px-6 md:mx-10 md:px-10 xl:mx-16 xl:px-16">
+      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 text-[#666] sm:flex-row sm:items-center sm:justify-between sm:py-5 lg:px-8">
         <div className="text-xs sm:text-sm md:text-base">
           Copyright © 2026 Must. All Rights Reserved.
         </div>
@@ -89,7 +83,9 @@ const Footer = () => {
               href="https://www.epic-sphere.com/"
               target="_blank"
               rel="noopener noreferrer"
-            >Epic Sphere</a>
+            >
+              Epic Sphere
+            </a>
           </b>
         </div>
       </div>
