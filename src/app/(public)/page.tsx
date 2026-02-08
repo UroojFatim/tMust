@@ -1,39 +1,135 @@
 import Hero from "@/views/Hero";
-import Promotions from "@/views/Promotions";
-import ProductList from "@/views/ProductList";
-import DifferentFromOthers from "@/views/DifferentFromOthers";
-import Newsletter from "@/views/Newsletter";
+import LuxuryCollection from "@/views/LuxuryCollection";
 import ImageSection from "@/views/ImageSection";
-import VideoTextSection from "@/views/VideoTextSection";
 import EthnicCollection from "@/views/EthnicCollection";
 import ShopByCollection from "@/views/ShopByCollection";
 import Collections from "@/views/Collections";
-import SufiCollection from "@/views/SufiCollection";
 import AfsanaShowcase from "@/views/AfsanaShowcase";
+import { getDatabase } from "@/lib/mongodb";
+
+type CollectionItem = {
+  _id?: string;
+  name: string;
+  slug: string;
+};
+
+type ProductItem = {
+  _id?: string;
+  title?: string;
+  slug?: string;
+  description?: string;
+  basePrice?: number;
+  productCode?: string;
+  collection?: string;
+  collectionSlug?: string;
+  style?: string;
+  styleSlug?: string;
+  variants?: Array<{ images?: Array<{ url?: string }> }>;
+  images?: Array<{ url?: string }>;
+  createdAt?: string;
+};
+
+const serializeProducts = (products: any[]): ProductItem[] =>
+  products.map((product) => ({
+    _id: product._id?.toString(),
+    title: product.title,
+    slug: product.slug,
+    description: product.description,
+    basePrice: product.basePrice,
+    productCode: product.productCode,
+    collection: product.collection,
+    collectionSlug: product.collectionSlug,
+    style: product.style,
+    styleSlug: product.styleSlug,
+    variants: product.variants,
+    images: product.images,
+    createdAt: product.createdAt,
+  }));
+
+const serializeCollections = (collections: any[]): CollectionItem[] =>
+  collections.map((collection) => ({
+    _id: collection._id?.toString(),
+    name: collection.name,
+    slug: collection.slug ?? "",
+  }));
+
+const getCollections = async () => {
+  const db = await getDatabase();
+  const collections = await db
+    .collection("inventory_collections")
+    .find({})
+    .sort({ name: 1 })
+    .toArray();
+  return serializeCollections(collections);
+};
+
+const getAllProducts = async () => {
+  const db = await getDatabase();
+  const products = await db
+    .collection("inventory_products")
+    .find({})
+    .sort({ createdAt: -1 })
+    .toArray();
+  return serializeProducts(products);
+};
+
+const getProductsByCollection = async (collectionSlug: string) => {
+  const db = await getDatabase();
+  const products = await db
+    .collection("inventory_products")
+    .find({
+      $or: [
+        { collectionSlug },
+        { collectionSlug: collectionSlug.toLowerCase() },
+        { collection: collectionSlug },
+        { collection: new RegExp(collectionSlug, "i") },
+      ],
+    })
+    .sort({ createdAt: -1 })
+    .toArray();
+  return serializeProducts(products);
+};
 
 export default async function Home() {
+  const [collections, products, luxuryProducts, ethnicProducts] =
+    await Promise.all([
+      getCollections(),
+      getAllProducts(),
+      getProductsByCollection("luxury-collection"),
+      getProductsByCollection("ethnic-collection"),
+    ]);
+
   return (
     <section>
       <Hero></Hero>
       {/* <Promotions></Promotions> */}
-      <ShopByCollection />
-      <Collections />
-      <ImageSection
-        desktopSrc="/hero/home_desktop_1.png"
-        mobileSrc="/hero/home_mobile_1.png"
-        alt="Hero Section 1"
+      <ShopByCollection
+        initialCollections={collections}
+        initialProducts={products}
       />
-      <EthnicCollection />
+      <Collections initialCollections={collections} />
+      <ImageSection
+        desktopSrc="/hero/ethniccollectiondesktop.jpg"
+        mobileSrc="/hero/ethniccollectionmobile.png"
+        alt="Hero Section 1"
+        collectionName="Ethnic Collection"
+        collectionSlug="ethnic-collection"
+      />
+      <EthnicCollection initialProducts={ethnicProducts} />
       <ImageSection
         desktopSrc="/hero/luxurycollectiondesktop.jpg"
         mobileSrc="/hero/luxurycollectionmobile.jpg"
         alt="Hero Section 2"
+        collectionName="Luxury Collection"
+        collectionSlug="luxury-collection"
       />
-      <ProductList></ProductList>
+      <LuxuryCollection initialProducts={luxuryProducts} />
       <ImageSection
         desktopSrc="/hero/suficollectiondesktop.jpg"
         mobileSrc="/hero/suficollectionmobile.jpg"
         alt="Hero Section 3"
+        collectionName="Sufi Collection"
+        collectionSlug="sufi-collection"
       />
       <AfsanaShowcase />
       {/* <SufiCollection /> */}

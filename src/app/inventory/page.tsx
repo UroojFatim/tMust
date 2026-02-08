@@ -107,7 +107,7 @@ export default function InventoryDashboardPage() {
         <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
           <div className="mb-6">
             <h1 className="text-2xl font-semibold text-slate-900">
-              TMUST Inventory
+              TMUSTT Inventory
             </h1>
             <p className="text-sm text-slate-500">
               Sign in with your admin credentials to manage stock.
@@ -164,7 +164,7 @@ export default function InventoryDashboardPage() {
       <div className="w-full max-w-6xl space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-semibold">TMUST Inventory</h1>
+            <h1 className="text-3xl font-semibold">TMUSTT Inventory</h1>
             <p className="text-sm text-slate-500">
               Manage your clothing inventory
             </p>

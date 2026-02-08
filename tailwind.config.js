@@ -33,12 +33,13 @@ module.exports = {
 
         // MUST Brand Theme
         brand: {
-          navy: "#3182CE",   // dark blue#41667d
-          sky: "#D1ECFE",    // sky blue
-          sky_dark: "#A0D8FC", // darker sky blue
-          black: "#0B0B0B",
+          navy: "#CC2F2F",   // dark blue#41667d
+          sky: "#861010",    // persian red main
+          sky_dark: "#850F0F", // darker persian red
+          black: "#CB2F2E",
           white: "#FFFFFF",
           sky_light: "#F3FAFF",
+          
         },
 
         // shadcn/ui token colors (keep as-is)

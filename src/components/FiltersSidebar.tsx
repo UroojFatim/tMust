@@ -1,6 +1,6 @@
 "use client";
 
-const SIZES = ["xs", "s", "m", "l", "xl", "24", "26", "28", "30", "32"];
+const SIZES = ["xs", "s", "m", "l", "xl"];
 const COLORS = ["black", "white", "navy", "gray", "pink", "red", "blue", "beige"];
 
 export default function FiltersSidebar({
