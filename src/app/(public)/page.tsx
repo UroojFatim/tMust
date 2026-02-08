@@ -117,7 +117,7 @@ export default async function Home() {
       />
       <EthnicCollection initialProducts={ethnicProducts} />
       <ImageSection
-        desktopSrc="/hero/luxurycollectiondesktop.jpg"
+        desktopSrc="/hero/luxurycollectiondesktop.png"
         mobileSrc="/hero/luxurycollectionmobile.jpg"
         alt="Hero Section 2"
         collectionName="Luxury Collection"
@@ -125,7 +125,7 @@ export default async function Home() {
       />
       <LuxuryCollection initialProducts={luxuryProducts} />
       <ImageSection
-        desktopSrc="/hero/suficollectiondesktop.jpg"
+        desktopSrc="/hero/suficollectiondesktop.png"
         mobileSrc="/hero/suficollectionmobile.jpg"
         alt="Hero Section 3"
         collectionName="Sufi Collection"
