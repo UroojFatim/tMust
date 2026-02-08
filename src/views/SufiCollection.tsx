@@ -7,7 +7,7 @@ export default function SufiCollection() {
     <Wrapper noGutters>
       <section className="py-10">
         <div className="max-w-full">
-          <div className="flex items-center justify-between mb-4">
+          {/* <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Sufi Collections</h3>
             <Link
               href="/collection/sufi-collection"
@@ -15,7 +15,7 @@ export default function SufiCollection() {
             >
               View All
             </Link>
-          </div>
+          </div> */}
 
           <div>
             <MovingProducts collectionSlug="sufi-collection" />

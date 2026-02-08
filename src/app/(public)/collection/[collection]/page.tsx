@@ -2,6 +2,14 @@ import Wrapper from "@/components/shared/Wrapper";
 import AllProductsClient from "@/components/AllProductsClient";
 import { notFound } from "next/navigation";
 import { getDatabase } from "@/lib/mongodb";
+import { getCollectionBySlug } from "@/lib/db/seo";
+import {
+  BRAND_NAME,
+  DEFAULT_DESCRIPTION,
+  DEFAULT_OG_IMAGE,
+  SITE_URL,
+} from "@/lib/seo";
+import type { Metadata } from "next";
 
 async function getCollectionData(slug: string) {
   try {
@@ -94,20 +102,91 @@ async function getCollectionData(slug: string) {
   }
 }
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 3600;
 
-export default async function Page({ params }: { params: Promise<{ collection: string }> }) {
-  const resolvedParams = await params;
-  const { collection } = resolvedParams;
-  const data = await getCollectionData(collection);
+export async function generateMetadata({
+  params,
+}: {
+  params: { collection: string };
+}): Promise<Metadata> {
+  const collection = await getCollectionBySlug(params.collection);
+
+  if (!collection) {
+    return {
+      title: `Collection Not Found | ${BRAND_NAME}`,
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const title = collection.name || BRAND_NAME;
+  const description =
+    collection.shortDescription ||
+    collection.description ||
+    DEFAULT_DESCRIPTION;
+  const canonical = `/collection/${collection.slug || params.collection}`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+    },
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: canonical,
+      images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE],
+    },
+  };
+}
+
+export default async function Page({
+  params,
+}: {
+  params: { collection: string };
+}) {
+  const data = await getCollectionData(params.collection);
 
   if (!data) {
     notFound();
   }
 
+  const collectionUrl = `${SITE_URL}/collection/${params.collection}`;
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: data.name,
+        item: collectionUrl,
+      },
+    ],
+  };
+
   return (
     <Wrapper>
+      {/* JSON-LD structured data for collection breadcrumbs */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
       <section className="py-32">
         {/* <h1 className="text-3xl font-bold mb-6 capitalize">
           {data.name}

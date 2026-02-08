@@ -38,11 +38,56 @@ const toSlug = (value: string) =>
 const getProductImage = (product: ProductItem) =>
   product?.variants?.[0]?.images?.[0]?.url || product?.images?.[0]?.url || null;
 
-export default function ShopByCollection() {
-  const [collections, setCollections] = useState<CollectionCard[]>([]);
-  const [loading, setLoading] = useState(true);
+type ShopByCollectionProps = {
+  initialCollections?: CollectionItem[];
+  initialProducts?: ProductItem[];
+};
+
+const buildCollectionCards = (
+  collectionsData: CollectionItem[] = [],
+  productsData: ProductItem[] = []
+) => {
+  const imageMap = new Map<string, string>();
+  productsData.forEach((product) => {
+    const collectionSlug =
+      product.collectionSlug ||
+      (product.collection ? toSlug(product.collection) : "");
+    if (!collectionSlug || imageMap.has(collectionSlug)) return;
+
+    const imageUrl = getProductImage(product);
+    if (imageUrl) {
+      imageMap.set(collectionSlug, imageUrl);
+    }
+  });
+
+  return collectionsData.map((collection) => {
+    const slug = collection.slug || toSlug(collection.name);
+    return {
+      name: collection.name,
+      slug,
+      imageUrl: imageMap.get(slug) ?? null,
+    };
+  });
+};
+
+export default function ShopByCollection({
+  initialCollections,
+  initialProducts,
+}: ShopByCollectionProps) {
+  const hasInitialData =
+    Array.isArray(initialCollections) && Array.isArray(initialProducts);
+  const [collections, setCollections] = useState<CollectionCard[]>(
+    hasInitialData
+      ? buildCollectionCards(initialCollections, initialProducts)
+      : []
+  );
+  const [loading, setLoading] = useState(!hasInitialData);
 
   useEffect(() => {
+    if (hasInitialData) {
+      return;
+    }
+
     const load = async () => {
       try {
         setLoading(true);
@@ -59,28 +104,9 @@ export default function ShopByCollection() {
           return;
         }
 
-        const imageMap = new Map<string, string>();
-        (productsData.products as ProductItem[]).forEach((product) => {
-          const collectionSlug =
-            product.collectionSlug ||
-            (product.collection ? toSlug(product.collection) : "");
-          if (!collectionSlug || imageMap.has(collectionSlug)) return;
-
-          const imageUrl = getProductImage(product);
-          if (imageUrl) {
-            imageMap.set(collectionSlug, imageUrl);
-          }
-        });
-
-        const cards = (collectionsData.collections as CollectionItem[]).map(
-          (collection) => {
-            const slug = collection.slug || toSlug(collection.name);
-            return {
-              name: collection.name,
-              slug,
-              imageUrl: imageMap.get(slug) ?? null,
-            };
-          },
+        const cards = buildCollectionCards(
+          collectionsData.collections as CollectionItem[],
+          productsData.products as ProductItem[]
         );
 
         setCollections(cards);
@@ -92,7 +118,7 @@ export default function ShopByCollection() {
     };
 
     load();
-  }, []);
+  }, [hasInitialData]);
 
   if (loading) {
     return <LoadingSpinner />;

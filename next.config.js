@@ -9,7 +9,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "tmust.com",
+        hostname: "tmustt.com",
         pathname: "/api/inventory/images/**",
       },
     ],

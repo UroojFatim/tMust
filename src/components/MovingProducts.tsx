@@ -8,6 +8,7 @@ import Link from "next/link";
 
 interface MovingProductsProps {
   collectionSlug: string;
+  initialProducts?: any[];
 }
 
 interface StyleCardItem {
@@ -32,11 +33,17 @@ const colorClass: Record<string, string> = {
   "dark brown": "bg-amber-900",
 };
 
-export default function MovingProducts({ collectionSlug }: MovingProductsProps) {
-  const [products, setProducts] = useState<any[]>([]);
+export default function MovingProducts({
+  collectionSlug,
+  initialProducts,
+}: MovingProductsProps) {
+  const hasInitialProducts = Array.isArray(initialProducts);
+  const [products, setProducts] = useState<any[]>(
+    hasInitialProducts ? initialProducts : [],
+  );
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!hasInitialProducts);
   const resumeTimer = useRef<number | null>(null);
 
   // responsive items count
@@ -55,21 +62,27 @@ export default function MovingProducts({ collectionSlug }: MovingProductsProps) 
   }, []);
 
   useEffect(() => {
+    if (hasInitialProducts || !collectionSlug) {
+      return;
+    }
+
     // Fetch products from MongoDB based on collection slug
     const fetchProducts = async () => {
       try {
         setLoading(true);
         console.log("Fetching products for collection:", collectionSlug);
-        const response = await fetch(`/api/public/products/collection/${collectionSlug}`);
+        const response = await fetch(
+          `/api/public/products/collection/${collectionSlug}`,
+        );
         const result = await response.json();
-        
+
         console.log("API Response:", result);
-        
+
         // Show debug info to understand database structure
         if (result.debug) {
           console.log("Products in database:", result.debug);
         }
-        
+
         if (result.ok && result.products) {
           console.log(`Received ${result.products.length} products`);
           setProducts(result.products);
@@ -85,10 +98,8 @@ export default function MovingProducts({ collectionSlug }: MovingProductsProps) 
       }
     };
 
-    if (collectionSlug) {
-      fetchProducts();
-    }
-  }, [collectionSlug]);
+    fetchProducts();
+  }, [collectionSlug, hasInitialProducts]);
 
   const styleItems = useMemo<StyleCardItem[]>(() => {
     if (!products.length) return [];
@@ -146,7 +157,9 @@ export default function MovingProducts({ collectionSlug }: MovingProductsProps) 
       map.set(slug, existing);
     });
 
-    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+    return Array.from(map.values()).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
   }, [products]);
 
   const maxIndex = useMemo(() => {
@@ -239,7 +252,7 @@ export default function MovingProducts({ collectionSlug }: MovingProductsProps) 
                       Style preview coming soon
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/70 via-brand-navy/10 to-transparent opacity-0 transition group-hover:opacity-100" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/50 via-brand-navy/5 to-transparent opacity-0 transition group-hover:opacity-80" />
                   {/* <div className="absolute left-3 top-3 rounded-full border border-white/70 bg-white/90 px-3 py-1 text-xs font-semibold text-brand-navy backdrop-blur">
                     Style
                   </div> */}
@@ -283,7 +296,9 @@ export default function MovingProducts({ collectionSlug }: MovingProductsProps) 
 
                   <div className="flex w-full items-center justify-between gap-2 bg-brand-navy px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors duration-300 hover:bg-brand-sky_dark">
                     Explore style
-                    <span className="transition group-hover:translate-x-1">→</span>
+                    <span className="transition group-hover:translate-x-1">
+                      →
+                    </span>
                   </div>
                 </div>
               </Link>

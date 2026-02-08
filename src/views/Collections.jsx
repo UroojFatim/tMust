@@ -5,8 +5,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-export default function Collections() {
-  const [collections, setCollections] = useState([]);
+/**
+ * @param {{ initialCollections?: Array<{ name: string; slug?: string }> }} props
+ */
+export default function Collections({ initialCollections }) {
+  const safeCollections = Array.isArray(initialCollections)
+    ? initialCollections
+    : [];
+  const [collections, setCollections] = useState(() =>
+    safeCollections
+      .map((collection) => ({
+        title: collection?.name,
+        slug: collection?.slug,
+      }))
+      .filter((collection) => collection.title && collection.slug)
+  );
+  const hasInitialCollections = safeCollections.length > 0;
 
   const imageUrls = [
     "/collections/luxury.png",
@@ -16,6 +30,10 @@ export default function Collections() {
   ];
 
   useEffect(() => {
+    if (hasInitialCollections) {
+      return;
+    }
+
     const loadCollections = async () => {
       try {
         const response = await fetch("/api/public/collections", {
@@ -38,7 +56,7 @@ export default function Collections() {
     };
 
     loadCollections();
-  }, []);
+  }, [hasInitialCollections]);
 
   const items = collections
     .slice(0, imageUrls.length)
