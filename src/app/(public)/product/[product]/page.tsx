@@ -72,9 +72,10 @@ export const revalidate = 3600;
 export async function generateMetadata({
   params,
 }: {
-  params: { product: string };
+  params: Promise<{ product: string }>;
 }): Promise<Metadata> {
-  const product = await getProductBySlug(params.product);
+  const { product: productSlug } = await params;
+  const product = await getProductBySlug(productSlug);
 
   if (!product) {
     return {
@@ -83,7 +84,7 @@ export async function generateMetadata({
     };
   }
 
-  const typedProduct = product as IProduct;
+  const typedProduct = product as unknown as IProduct;
   const title = typedProduct.title || BRAND_NAME;
   const description =
     typedProduct.shortDescription ||
@@ -117,9 +118,10 @@ export async function generateMetadata({
 export default async function Page({
   params,
 }: {
-  params: { product: string };
+  params: Promise<{ product: string }>;
 }) {
-  const rawProduct = (await getProductBySlug(params.product)) as
+  const { product: productSlug } = await params;
+  const rawProduct = (await getProductBySlug(productSlug)) as
     | IProduct
     | null;
 

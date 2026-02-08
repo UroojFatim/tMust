@@ -107,9 +107,10 @@ export const revalidate = 3600;
 export async function generateMetadata({
   params,
 }: {
-  params: { collection: string };
+  params: Promise<{ collection: string }>;
 }): Promise<Metadata> {
-  const collection = await getCollectionBySlug(params.collection);
+  const { collection: collectionSlug } = await params;
+  const collection = await getCollectionBySlug(collectionSlug);
 
   if (!collection) {
     return {
@@ -123,7 +124,7 @@ export async function generateMetadata({
     collection.shortDescription ||
     collection.description ||
     DEFAULT_DESCRIPTION;
-  const canonical = `/collection/${collection.slug || params.collection}`;
+  const canonical = `/collection/${collection.slug || collectionSlug}`;
 
   return {
     title,
@@ -150,15 +151,16 @@ export async function generateMetadata({
 export default async function Page({
   params,
 }: {
-  params: { collection: string };
+  params: Promise<{ collection: string }>;
 }) {
-  const data = await getCollectionData(params.collection);
+  const { collection: collectionSlug } = await params;
+  const data = await getCollectionData(collectionSlug);
 
   if (!data) {
     notFound();
   }
 
-  const collectionUrl = `${SITE_URL}/collection/${params.collection}`;
+  const collectionUrl = `${SITE_URL}/collection/${collectionSlug}`;
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",

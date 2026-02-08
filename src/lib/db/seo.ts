@@ -1,5 +1,9 @@
 import { getDatabase } from "@/lib/mongodb";
 
+type SlugDoc = {
+  slug?: string;
+};
+
 export const getProductBySlug = async (slug: string) => {
   if (!slug) return null;
   const db = await getDatabase();
@@ -15,7 +19,7 @@ export const getCollectionBySlug = async (slug: string) => {
 export const getAllProductSlugs = async () => {
   const db = await getDatabase();
   const results = await db
-    .collection("inventory_products")
+    .collection<SlugDoc>("inventory_products")
     .find({ slug: { $type: "string" } }, { projection: { slug: 1, _id: 0 } })
     .toArray();
 
@@ -27,7 +31,7 @@ export const getAllProductSlugs = async () => {
 export const getAllCollectionSlugs = async () => {
   const db = await getDatabase();
   const results = await db
-    .collection("inventory_collections")
+    .collection<SlugDoc>("inventory_collections")
     .find({ slug: { $type: "string" } }, { projection: { slug: 1, _id: 0 } })
     .toArray();
 
