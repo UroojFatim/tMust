@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { FC, useMemo, useState } from "react";
 import Link from "next/link";
-import { urlForImage } from "../../sanity/lib/image";
 
 const colorClass: Record<string, string> = {
   black: "bg-black",

@@ -1,12 +1,11 @@
-# E-Commerce Website with Next.js, Sanity, MongoDB & Stripe
+# E-Commerce Website with Next.js, MongoDB & Stripe
 
-An e-commerce platform built with Next.js, featuring Sanity CMS for product management, MongoDB for data storage, and Stripe for secure payment processing. Users can browse products, add items to cart, and complete purchases with automatic user account creation at checkout.
+An e-commerce platform built with Next.js, MongoDB for data storage, and Stripe for secure payment processing. Users can browse products, add items to cart, and complete purchases with automatic user account creation at checkout.
 
 ## 🚀 Features
 
 - **No Authentication Required**: Session-based cart system using localStorage
 - **Automatic User Creation**: User accounts created during Stripe checkout
-- **Product Management**: Powered by Sanity CMS
 - **Secure Payments**: Stripe integration with webhook support
 - **MongoDB Storage**: Cart items, users, and orders stored in MongoDB
 - **Responsive Design**: Built with Tailwind CSS
@@ -16,7 +15,6 @@ An e-commerce platform built with Next.js, featuring Sanity CMS for product mana
 - Node.js 18+ installed
 - MongoDB Atlas account (free tier available)
 - Stripe account (test mode works fine)
-- Sanity account for CMS
 
 ## 🔧 Installation
 
@@ -48,9 +46,6 @@ An e-commerce platform built with Next.js, featuring Sanity CMS for product mana
    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_key
    STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 
-   # Sanity
-   NEXT_PUBLIC_SANITY_PROJECT_ID=your_project_id
-   NEXT_PUBLIC_SANITY_DATASET=production
    ```
 
 4. **Set up Stripe Webhook**
@@ -119,7 +114,6 @@ See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for detailed migration notes.
 
 - **Framework**: Next.js 15
 - **Database**: MongoDB
-- **CMS**: Sanity
 - **Payments**: Stripe
 - **Styling**: Tailwind CSS
 - **Language**: TypeScript
@@ -129,7 +123,6 @@ See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for detailed migration notes.
 - [Next.js Documentation](https://nextjs.org/docs)
 - [MongoDB Documentation](https://docs.mongodb.com/)
 - [Stripe Documentation](https://stripe.com/docs)
-- [Sanity Documentation](https://www.sanity.io/docs)
 
 ## 🚀 Deploy on Vercel
 
