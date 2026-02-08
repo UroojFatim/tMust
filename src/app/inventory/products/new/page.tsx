@@ -24,7 +24,6 @@ export default function AddInventoryProductPage() {
     title: "",
     slug: "",
     shortDescription: "",
-    productCode: "",
     collection: "",
     collectionSlug: "",
     style: "",
@@ -450,14 +449,9 @@ export default function AddInventoryProductPage() {
                   Product Code
                 </label>
                 <input
-                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                  value={form.productCode}
-                  onChange={(event) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      productCode: event.target.value,
-                    }))
-                  }
+                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-slate-50 text-slate-500"
+                  value="Auto-generated on save"
+                  readOnly
                 />
               </div>
               <div>
