@@ -221,8 +221,8 @@ export default function MovingProducts({ collectionSlug }: MovingProductsProps) 
               style={{ width: `calc(100% / ${itemsToShow})` }}
             >
               <Link
-                href={`/collection/${item.slug}`}
-                className="group relative block h-full overflow-hidden rounded-2xl border border-brand-sky_dark/60 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl"
+                href={`/style/${item.slug}`}
+                className="group relative block h-full overflow-hidden border border-brand-sky_dark/60 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl"
                 onClick={() => pauseFor(1500)}
               >
                 <div className="relative aspect-[4/5] overflow-hidden bg-brand-sky_light">
@@ -240,14 +240,14 @@ export default function MovingProducts({ collectionSlug }: MovingProductsProps) 
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/70 via-brand-navy/10 to-transparent opacity-0 transition group-hover:opacity-100" />
-                  <div className="absolute left-3 top-3 rounded-full border border-white/70 bg-white/90 px-3 py-1 text-xs font-semibold text-brand-navy backdrop-blur">
+                  {/* <div className="absolute left-3 top-3 rounded-full border border-white/70 bg-white/90 px-3 py-1 text-xs font-semibold text-brand-navy backdrop-blur">
                     Style
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="space-y-3 p-4">
                   <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-base font-semibold text-brand-navy leading-snug">
+                    <h3 className="text-lg font-semibold text-black leading-snug">
                       {item.name}
                     </h3>
                     <span className="rounded-full border border-brand-sky_dark/60 bg-brand-sky_light px-2.5 py-1 text-xs font-semibold text-brand-navy">
@@ -255,7 +255,7 @@ export default function MovingProducts({ collectionSlug }: MovingProductsProps) 
                     </span>
                   </div>
 
-                  {item.colors.length > 0 && (
+                  {/* {item.colors.length > 0 && (
                     <div className="flex items-center gap-1.5">
                       {item.colors.slice(0, 5).map((color, colorIndex) => {
                         const normalizedColor = color.replace(/\s+/g, " ");
@@ -275,13 +275,13 @@ export default function MovingProducts({ collectionSlug }: MovingProductsProps) 
                         </span>
                       )}
                     </div>
-                  )}
+                  )} */}
 
-                  <p className="text-sm text-slate-600 line-clamp-2">
+                  {/* <p className="text-sm text-slate-600 line-clamp-2">
                     Explore {item.name} pieces curated for this collection.
-                  </p>
+                  </p> */}
 
-                  <div className="inline-flex items-center gap-2 text-sm font-semibold text-brand-navy">
+                  <div className="flex w-full items-center justify-between gap-2 bg-brand-navy px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors duration-300 hover:bg-brand-sky_dark">
                     Explore style
                     <span className="transition group-hover:translate-x-1">→</span>
                   </div>

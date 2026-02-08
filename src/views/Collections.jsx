@@ -1,14 +1,51 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function Collections() {
-  const items = [
-    { title: "Luxury", image: "/collections/luxury.png" },
-    { title: "Semi Formal", image: "/collections/semiformal.png" },
-    { title: "Ethnic Collection", image: "/collections/Ethnic.png" },
-    { title: "Smart Casual Collection", image: "/collections/smartcasual.png" },
+  const [collections, setCollections] = useState([]);
+
+  const imageUrls = [
+    "/collections/luxury.png",
+    "/collections/semiformal.png",
+    "/collections/Ethnic.png",
+    "/collections/smartcasual.png",
   ];
+
+  useEffect(() => {
+    const loadCollections = async () => {
+      try {
+        const response = await fetch("/api/public/collections", {
+          cache: "no-store",
+        });
+        const data = await response.json();
+        if (data?.ok && Array.isArray(data.collections)) {
+          setCollections(
+            data.collections
+              .map((collection) => ({
+                title: collection?.name,
+                slug: collection?.slug,
+              }))
+              .filter((collection) => collection.title && collection.slug)
+          );
+        }
+      } catch (error) {
+        console.error("Failed to load collections", error);
+      }
+    };
+
+    loadCollections();
+  }, []);
+
+  const items = collections
+    .slice(0, imageUrls.length)
+    .map((title, index) => ({
+      ...title,
+      image: imageUrls[index],
+    }));
 
   return (
     <section className="w-full py-16 bg-white">
@@ -40,22 +77,30 @@ export default function Collections() {
               className="flex flex-col items-center"
             >
               {/* Circle Image */}
-              <motion.div
-                whileHover={{ scale: 1.08 }}
-                transition={{ type: "spring", stiffness: 200 }}
-                className="w-36 h-36 md:w-40 md:h-40 rounded-full overflow-hidden border border-gray-200 shadow-md"
-              >
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover"
-                />
-              </motion.div>
+              <Link href={`/collection/${item.slug}`} className="group">
+                <motion.div
+                  whileHover={{ scale: 1.08 }}
+                  transition={{ type: "spring", stiffness: 200 }}
+                  className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border border-gray-200 shadow-md"
+                >
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    width={160}
+                    height={160}
+                    sizes="(max-width: 768px) 144px, 260px"
+                    className="h-full w-full object-cover"
+                  />
+                </motion.div>
+              </Link>
 
               {/* Title */}
-              <p className="mt-4 text-sm md:text-base font-medium">
+              <Link
+                href={`/collection/${item.slug}`}
+                className="mt-4 text-sm md:text-base font-medium transition group-hover:opacity-80"
+              >
                 {item.title}
-              </p>
+              </Link>
             </motion.div>
           ))}
         </div>
