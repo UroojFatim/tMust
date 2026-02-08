@@ -109,9 +109,9 @@ export default async function Page({ params }: { params: Promise<{ collection: s
   return (
     <Wrapper>
       <section className="py-32">
-        <h1 className="text-3xl font-bold mb-6 capitalize">
+        {/* <h1 className="text-3xl font-bold mb-6 capitalize">
           {data.name}
-        </h1>
+        </h1> */}
         <AllProductsClient products={data.products} />
       </section>
     </Wrapper>

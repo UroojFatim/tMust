@@ -8,7 +8,6 @@ import { toast, ToastContainer } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/components/CartContext";
-import { urlForImage } from "../../sanity/lib/image";
 import Image from "next/image";
 
 const titleCase = (value: string) =>
@@ -28,7 +27,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
   const variants = useMemo(() => foundData?.variants || [], [foundData?.variants]);
 
   // Get all unique sizes from all variants (only those with stock > 0)
-  const sizesFromSanity: string[] = useMemo(() => {
+  const sizesFromVariants: string[] = useMemo(() => {
     const sizeSet = new Set<string>();
     variants.forEach((variant: any) => {
       (variant.sizes || []).forEach((s: any) => {
@@ -39,7 +38,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
   }, [variants]);
 
   // Get all unique colors from variants (only those with at least one size in stock)
-  const colorsFromSanity: string[] = useMemo(() => {
+  const colorsFromVariants: string[] = useMemo(() => {
     return variants
       .filter((v: any) => {
         // Check if this variant has at least one size with stock
@@ -49,14 +48,14 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
       .filter(Boolean);
   }, [variants]);
 
-  const hasSizes = sizesFromSanity.length > 0;
-  const hasColors = colorsFromSanity.length > 0;
+  const hasSizes = sizesFromVariants.length > 0;
+  const hasColors = colorsFromVariants.length > 0;
 
   const [selectedSize, setSelectedSize] = useState<string | null>(
-    sizesFromSanity.length > 0 ? sizesFromSanity[0] : null
+    sizesFromVariants.length > 0 ? sizesFromVariants[0] : null
   );
   const [selectedColor, setSelectedColor] = useState<string | null>(
-    colorsFromSanity.length > 0 ? colorsFromSanity[0] : null
+    colorsFromVariants.length > 0 ? colorsFromVariants[0] : null
   );
 
   const [isLoading, setIsLoading] = useState(false);
@@ -364,7 +363,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
               <>
                 <h3 className="font-bold mt-4 sm:mt-6 text-sm sm:text-base">SELECT SIZE</h3>
                 <div className="flex font-bold gap-2 mt-3 sm:mt-4 text-gray-800 flex-wrap">
-                  {sizesFromSanity.map((size) => (
+                  {sizesFromVariants.map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
@@ -386,7 +385,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
               <>
                 <h3 className="font-bold mt-4 sm:mt-6 text-sm sm:text-base">SELECT COLOR</h3>
                 <div className="flex font-bold gap-2 mt-3 sm:mt-4 text-gray-800 flex-wrap">
-                  {colorsFromSanity.map((color) => (
+                  {colorsFromVariants.map((color) => (
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}

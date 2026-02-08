@@ -8,8 +8,8 @@ import desktopHero2 from "../../public/hero/hero_desktop_2.png";
 import desktopHero3 from "../../public/hero/hero_desktop_3.png";
 // Mobile images
 import mobileHero1 from "../../public/hero/hero_mobile_1.png";
-import mobileHero2 from "../../public/hero/hero_mobile_2.png";
-import mobileHero3 from "../../public/hero/hero_mobile_3.png";
+import mobileHero2 from "../../public/hero/heromobile22.png";
+import mobileHero3 from "../../public/hero/heromobile33.png";
 
 const desktopSlides = [
   { src: desktopHero1, alt: "MUST collection slide 1" },
@@ -49,7 +49,7 @@ const Hero = () => {
   }, [maxIndex]);
 
   return (
-    <section className="relative w-full h-[calc(100svh-70px)] md:h-[calc(100vh-90px)] min-h-[520px] md:min-h-[650px]">
+    <section className="relative w-full h-screen min-h-[520px] md:min-h-[650px]">
 
       <div
         className="absolute inset-0 z-0"
