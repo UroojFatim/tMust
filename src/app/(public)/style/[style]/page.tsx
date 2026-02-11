@@ -1,7 +1,9 @@
 import Wrapper from "@/components/shared/Wrapper";
 import AllProductsClient from "@/components/AllProductsClient";
+import ProductDetails from "@/components/ProductDetails";
 import { notFound } from "next/navigation";
 import { getDatabase } from "@/lib/mongodb";
+import ImageSection from "@/views/ImageSection";
 
 async function getStyleData(slug: string) {
   try {
@@ -9,7 +11,11 @@ async function getStyleData(slug: string) {
 
     const [styles, products] = await Promise.all([
       db.collection("inventory_styles").find({}).sort({ name: 1 }).toArray(),
-      db.collection("inventory_products").find({}).sort({ createdAt: -1 }).toArray(),
+      db
+        .collection("inventory_products")
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray(),
     ]);
 
     const stylesData = styles.map((s: any) => ({
@@ -44,8 +50,11 @@ async function getStyleData(slug: string) {
 
     let filtered = productsData.filter((product: any) => {
       const matchesBySlug = product.styleSlug === slug;
-      const matchesByName = typeof product.style === "string" && matchesStyleName(product.style);
-      const matchesByArray = Array.isArray(product.style) && product.style.some((s: string) => matchesStyleName(s));
+      const matchesByName =
+        typeof product.style === "string" && matchesStyleName(product.style);
+      const matchesByArray =
+        Array.isArray(product.style) &&
+        product.style.some((s: string) => matchesStyleName(s));
       return matchesBySlug || matchesByName || matchesByArray;
     });
 
@@ -75,7 +84,11 @@ async function getStyleData(slug: string) {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function Page({ params }: { params: Promise<{ style: string }> }) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ style: string }>;
+}) {
   const resolvedParams = await params;
   const { style } = resolvedParams;
   const data = await getStyleData(style);
@@ -84,12 +97,25 @@ export default async function Page({ params }: { params: Promise<{ style: string
     notFound();
   }
 
+  const firstProduct = data.products[0];
+
   return (
-    <Wrapper>
-      <section className="py-32">
-        {/* <h1 className="mb-6 text-3xl font-bold capitalize">{data.name}</h1> */}
-        <AllProductsClient products={data.products} />
-      </section>
-    </Wrapper>
+    <>
+      <ImageSection
+        desktopSrc="/hero/ethniccollectiondesktop.jpg"
+        mobileSrc="/hero/ethniccollectionmobile.png"
+        alt="Hero Section 1"
+        collectionName="Ethnic Collection"
+        collectionSlug="ethnic-collection"
+        shopNow={false}
+      />
+      <Wrapper>
+        <section>
+          {/* <h1 className="mb-6 text-3xl font-bold capitalize">{data.name}</h1> */}
+          {firstProduct ? <ProductDetails foundData={firstProduct} /> : null}
+          {/* <AllProductsClient products={data.products} showFilters={false} /> */}
+        </section>
+      </Wrapper>
+    </>
   );
 }

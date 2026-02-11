@@ -22,7 +22,7 @@ const AfsanaShowcase = () => {
         },
       }}
     >
-      <div className="mx-auto w-full max-w-screen-2xl px-5 sm:px-8 md:px-20 ">
+      <div className="mx-auto w-full max-w-screen-2xl px-6 md:px-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <motion.div
             className="flex flex-col justify-between gap-6"

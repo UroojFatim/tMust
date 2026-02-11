@@ -10,16 +10,25 @@ import {
   SITE_URL,
 } from "@/lib/seo";
 import type { Metadata } from "next";
+import ImageSection from "@/views/ImageSection";
 
 async function getCollectionData(slug: string) {
   try {
     const db = await getDatabase();
-    
+
     // Fetch all data from MongoDB directly
     const [collections, styles, products] = await Promise.all([
-      db.collection("inventory_collections").find({}).sort({ name: 1 }).toArray(),
+      db
+        .collection("inventory_collections")
+        .find({})
+        .sort({ name: 1 })
+        .toArray(),
       db.collection("inventory_styles").find({}).sort({ name: 1 }).toArray(),
-      db.collection("inventory_products").find({}).sort({ createdAt: -1 }).toArray(),
+      db
+        .collection("inventory_products")
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray(),
     ]);
 
     // Serialize MongoDB data
@@ -65,13 +74,14 @@ async function getCollectionData(slug: string) {
 
     // Filter products by collection slug from URL
     let filtered = productsData;
-    
+
     if (collection) {
       filtered = productsData.filter((product: any) => {
         // Try matching by collectionSlug first (new products)
         // Fall back to matching collection name with slug (old products)
         const matchesBySlug = product.collectionSlug === slug;
-        const matchesByName = product.collection?.toLowerCase().replace(/\s+/g, '-') === slug;
+        const matchesByName =
+          product.collection?.toLowerCase().replace(/\s+/g, "-") === slug;
         return matchesBySlug || matchesByName;
       });
     }
@@ -79,7 +89,7 @@ async function getCollectionData(slug: string) {
     // Add style names - handle both string and array (old products)
     filtered = filtered.map((product: any) => {
       let styleName = "Uncategorized";
-      if (typeof product.style === 'string') {
+      if (typeof product.style === "string") {
         styleName = product.style;
       } else if (Array.isArray(product.style) && product.style.length > 0) {
         styleName = product.style[0];
@@ -181,20 +191,30 @@ export default async function Page({
   };
 
   return (
-    <Wrapper>
-      {/* JSON-LD structured data for collection breadcrumbs */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbSchema),
-        }}
+    <>
+      <ImageSection
+        desktopSrc="/hero/ethniccollectiondesktop.jpg"
+        mobileSrc="/hero/ethniccollectionmobile.png"
+        alt="Hero Section 1"
+        collectionName="Ethnic Collection"
+        collectionSlug="ethnic-collection"
+        shopNow={false}
       />
-      <section className="py-32">
-        {/* <h1 className="text-3xl font-bold mb-6 capitalize">
+      <Wrapper>
+        {/* JSON-LD structured data for collection breadcrumbs */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(breadcrumbSchema),
+          }}
+        />
+        <section className="py-16">
+          {/* <h1 className="text-3xl font-bold mb-6 capitalize">
           {data.name}
         </h1> */}
-        <AllProductsClient products={data.products} />
-      </section>
-    </Wrapper>
+          <AllProductsClient products={data.products} />
+        </section>
+      </Wrapper>
+    </>
   );
 }

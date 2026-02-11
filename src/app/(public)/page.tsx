@@ -103,33 +103,36 @@ export default async function Home() {
     <section>
       <Hero></Hero>
       {/* <Promotions></Promotions> */}
-      <ShopByCollection
+      {/* <ShopByCollection
         initialCollections={collections}
         initialProducts={products}
-      />
+      /> */}
       <Collections initialCollections={collections} />
       <ImageSection
-        desktopSrc="/hero/ethniccollectiondesktop.jpg"
-        mobileSrc="/hero/ethniccollectionmobile.png"
+        desktopSrc="/hero/virasatcollectiondesktop.png"
+        mobileSrc="/hero/virasatcollectionmobile.png"
         alt="Hero Section 1"
-        collectionName="Ethnic Collection"
-        collectionSlug="ethnic-collection"
+        collectionName="Virasat Collection"
+        collectionSlug="virasat-collection"
+        shopNow={true}
       />
       <EthnicCollection initialProducts={ethnicProducts} />
       <ImageSection
         desktopSrc="/hero/luxurycollectiondesktop.png"
-        mobileSrc="/hero/luxurycollectionmobile.jpg"
+        mobileSrc="/hero/luxurycollectionmobile.png"
         alt="Hero Section 2"
         collectionName="Luxury Collection"
         collectionSlug="luxury-collection"
+        shopNow={true}
       />
       <LuxuryCollection initialProducts={luxuryProducts} />
       <ImageSection
-        desktopSrc="/hero/suficollectiondesktop.png"
-        mobileSrc="/hero/suficollectionmobile.jpg"
+        desktopSrc="/hero/kalaamcollectiondesktop.png"
+        mobileSrc="/hero/kalaamcollectionmobile.png"
         alt="Hero Section 3"
-        collectionName="Sufi Collection"
-        collectionSlug="sufi-collection"
+        collectionName="Kalaam Collection"
+        collectionSlug="kalaam-collection"
+        shopNow={true}
       />
       <AfsanaShowcase />
       {/* <SufiCollection /> */}

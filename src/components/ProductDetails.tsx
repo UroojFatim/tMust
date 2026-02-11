@@ -296,12 +296,12 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
   if (!foundData) return null;
 
   return (
-    <div className="flex pt-28 lg:pt-32 px-3 sm:px-4">
+    <div className="flex pt-12 px-3 sm:px-4">
       <div key={foundData._id} className="w-full">
         {/* First Row */}
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
           {/* Thumbnails */}
-          <div className="flex lg:flex-col order-2 lg:order-1 gap-2 overflow-x-auto lg:overflow-y-auto lg:mr-4 lg:w-24">
+          <div className="flex lg:flex-col order-2 lg:order-1 gap-2 overflow-x-auto lg:overflow-y-auto lg:w-24">
             {allProductImages?.map((_imageObj: any, index: number) => (
               <button
                 key={_imageObj?.url || index}
@@ -313,9 +313,9 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
                   alt={_imageObj.alt || foundData.title || "Product image"}
                   width={100}
                   height={100}
-                  className={`rounded transition-all w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 object-cover ${
+                  className={`rounded transition-all w-16 h-16 sm:w-20 sm:h-20 lg:w-32 lg:h-32 object-cover ${
                     selectedImageIndex === index
-                      ? "ring-2 ring-gray-900 ring-offset-0"
+                      ? ""
                       : "opacity-60 hover:opacity-100"
                   }`}
                 />
@@ -403,7 +403,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
             )}
 
             {/* Stock Availability - Urgency Message */}
-            {selectedSize && selectedColor && availableStock !== null && availableStock > 0 && availableStock < 10 && (
+            {/* {selectedSize && selectedColor && availableStock !== null && availableStock > 0 && availableStock < 10 && (
               <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-300 rounded-lg shadow-sm">
                 <p className="text-sm sm:text-base text-rose-800 font-semibold flex items-center gap-2">
                   <span className="text-xl">🔥</span>
@@ -413,7 +413,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
                 </p>
                 <p className="text-xs sm:text-sm text-rose-600 mt-1 ml-7">Limited stock - Order now before it&apos;s gone!</p>
               </div>
-            )}
+            )} */}
 
             {/* Quantity */}
             <div className="flex items-center gap-3 sm:gap-4 mt-6 sm:mt-8 flex-wrap">
@@ -477,9 +477,6 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
         {/* Second Row */}
         <div className="my-8 sm:my-12 md:my-16 lg:my-20 space-y-6 sm:space-y-8 lg:space-y-10 relative">
           <div className="border-b-4 pb-4 sm:pb-6">
-            <h3 className="font-extrabold text-2xl sm:text-3xl lg:text-[7.5rem] leading-tight lg:leading-[151px] text-paragraph opacity-10 lg:opacity-[0.06] lg:w-1/4 -z-10 lg:absolute top-0">
-              Overview
-            </h3>
             <h2 className="tracking-wider font-extrabold text-base sm:text-lg lg:text-xl mt-1">
               Product Information
             </h2>
