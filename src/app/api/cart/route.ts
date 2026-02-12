@@ -120,13 +120,27 @@ export const DELETE = async (request: NextRequest) => {
     const db = await getDatabase();
     const cartCollection = db.collection("cart");
     
+    console.log(`[Cart DELETE] Attempting to delete:`, {
+      user_id: req.user_id,
+      row_key: req.row_key,
+    });
+    
     // ✅ Delete by row_key which uniquely identifies product + size + color combo
     const result = await cartCollection.deleteOne({
       user_id: req.user_id,
       row_key: req.row_key,
     });
     
-    console.log("Product Successfully Deleted", result);
+    console.log("[Cart DELETE] Product Successfully Deleted", result);
+    
+    if (result.deletedCount === 0) {
+      console.warn("[Cart DELETE] No document found to delete. Checking all cart items:", {
+        user_id: req.user_id,
+      });
+      const allItems = await cartCollection.find({ user_id: req.user_id }).toArray();
+      console.warn("[Cart DELETE] All items in cart:", allItems);
+    }
+    
     return NextResponse.json({ message: "Product Successfully Deleted", result });
   } catch (error) {
     console.error("Error removing item from cart", error);

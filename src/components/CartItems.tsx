@@ -49,9 +49,8 @@ export default function CartItems() {
   const getRowKey = (item: CartItem) => {
     if (item.cart_item_id) return item.cart_item_id;
 
-    const size = (item.product_size ?? item.size ?? "no-size") || "no-size";
-    const color =
-      (item.product_color ?? item.color ?? "no-color") || "no-color";
+    const size = ((item.product_size ?? item.size ?? "no-size") || "no-size").toLowerCase();
+    const color = ((item.product_color ?? item.color ?? "no-color") || "no-color").toLowerCase();
 
     return `${item.product_id}__${size}__${color}`;
   };
@@ -160,16 +159,41 @@ export default function CartItems() {
 
   // ✅ delete by unique row (using row_key for proper variation handling)
   async function deleteProduct(rowKey: string) {
-    const res = await fetch("/api/cart", {
-      method: "DELETE",
-      body: JSON.stringify({
-        user_id: userId,
-        row_key: rowKey,
-      }),
-    });
-    setState(!state);
-    // ✅ Refresh cart context to update header count
-    await refreshCart();
+    try {
+      console.log("[DELETE] Attempting to delete with row_key:", rowKey);
+      const res = await fetch("/api/cart", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          row_key: rowKey,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("[DELETE] API error:", errorText);
+        alert("Failed to delete product from cart");
+        return;
+      }
+
+      const data = await res.json();
+      console.log("[DELETE] Response from API:", data);
+
+      if (data.result?.deletedCount === 0) {
+        console.warn("[DELETE] No items were deleted. Check if row_key matches.");
+        alert("Product not found in cart. Please refresh the page.");
+        return;
+      }
+
+      console.log("Product deleted successfully");
+      setState(!state);
+      // ✅ Refresh cart context to update header count
+      await refreshCart();
+    } catch (error) {
+      console.error("Delete product error:", error);
+      alert("Error deleting product from cart");
+    }
   }
 
   const totalQuantity = useMemo(() => {
@@ -250,7 +274,10 @@ export default function CartItems() {
                         </div>
 
                         <button
-                          onClick={() => deleteProduct(key)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            deleteProduct(key);
+                          }}
                           aria-label="Remove item"
                           className="flex-shrink-0 p-1 hover:bg-gray-100 rounded transition"
                         >
