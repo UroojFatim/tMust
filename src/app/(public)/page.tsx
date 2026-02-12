@@ -106,7 +106,7 @@ export default async function Home() {
       getCollections(),
       getAllProducts(),
       getProductsByCollection("luxury-collection"),
-      getProductsByCollection("ethnic-collection"),
+      getProductsByCollection("virasat-collection"),
     ]);
 
   return (

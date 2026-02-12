@@ -81,7 +81,7 @@ export default function Collections({ initialCollections }) {
         </motion.h2>
 
         {/* Circles */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 place-items-center">
+        <div className="grid grid-cols-1 md:grid-cols-4 mt-10 gap-8 place-items-center">
           {items.map((item, index) => (
             <motion.div
               key={index}
