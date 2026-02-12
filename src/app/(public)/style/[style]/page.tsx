@@ -29,15 +29,20 @@ async function getStyleData(slug: string) {
       title: p.title,
       slug: p.slug,
       description: p.description,
+      shortDescription: p.shortDescription,
       basePrice: p.basePrice,
       productCode: p.productCode,
       collection: p.collection,
       collectionSlug: p.collectionSlug,
       style: p.style,
       styleSlug: p.styleSlug,
+      tags: p.tags,
+      details: p.details,
+      purchasePrice: p.purchasePrice,
       variants: p.variants,
       images: p.images,
       createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
     }));
 
     const style = stylesData.find((s: any) => s.slug === slug);
@@ -99,14 +104,20 @@ export default async function Page({
 
   const firstProduct = data.products[0];
 
+  // Convert slug to readable style name (e.g., "luxury-style" to "Luxury Style")
+  const styleName = style
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
   return (
     <>
       <ImageSection
-        desktopSrc="/hero/ethniccollectiondesktop.jpg"
-        mobileSrc="/hero/ethniccollectionmobile.png"
-        alt="Hero Section 1"
-        collectionName="Ethnic Collection"
-        collectionSlug="ethnic-collection"
+        desktopSrc={`/styles/${style}-desktop.png`}
+        mobileSrc={`/styles/${style}-mobile.png`}
+        alt={styleName}
+        collectionName={styleName}
+        collectionSlug={style}
         shopNow={false}
       />
       <Wrapper>

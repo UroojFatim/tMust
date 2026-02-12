@@ -49,15 +49,20 @@ async function getCollectionData(slug: string) {
       title: p.title,
       slug: p.slug,
       description: p.description,
+      shortDescription: p.shortDescription,
       basePrice: p.basePrice,
       productCode: p.productCode,
       collection: p.collection,
       collectionSlug: p.collectionSlug,
       style: p.style,
       styleSlug: p.styleSlug,
+      tags: p.tags,
+      details: p.details,
+      purchasePrice: p.purchasePrice,
       variants: p.variants,
       images: p.images,
       createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
     }));
 
     // Find matching collection or style
@@ -190,14 +195,20 @@ export default async function Page({
     ],
   };
 
+  // Convert slug to readable collection name (e.g., "luxury-collection" to "Luxury Collection")
+  const collectionName = collectionSlug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
   return (
     <>
       <ImageSection
-        desktopSrc="/hero/ethniccollectiondesktop.jpg"
-        mobileSrc="/hero/ethniccollectionmobile.png"
-        alt="Hero Section 1"
-        collectionName="Ethnic Collection"
-        collectionSlug="ethnic-collection"
+        desktopSrc={`/collections/${collectionSlug}-desktop.png`}
+        mobileSrc={`/collections/${collectionSlug}-mobile.png`}
+        alt={collectionName}
+        collectionName={collectionName}
+        collectionSlug={collectionSlug}
         shopNow={false}
       />
       <Wrapper>

@@ -193,7 +193,7 @@ export default function CartItems() {
 
   return (
     <Wrapper>
-      <section className="px-3 sm:px-6 md:px-8 lg:px-12 my-28 lg:my-32">
+      <section className="px-2 my-28 lg:my-32">
         <h1 className="font-bold text-xl sm:text-2xl lg:text-3xl">
           Shopping Cart
         </h1>
@@ -262,11 +262,11 @@ export default function CartItems() {
                         {titleCase(item.product_category)}
                       </h2>
 
-                      <div className="mt-4 sm:mt-6 text-base sm:text-lg flex items-center justify-between">
+                      <div className="mt-2 sm:mt-4 text-base sm:text-lg flex items-center justify-between">
                         <div className="flex flex-col gap-1">
-                          <span className="text-sm sm:text-md font-bold">
+                          <span className="text-xl font-bold">
                             {" "}
-                            ${price.toFixed(2)}
+                            ${price}
                           </span>
                         </div>
 
@@ -344,15 +344,16 @@ export default function CartItems() {
               </div>
               <div className="text-base sm:text-lg">
                 Sub Total:{" "}
-                <span className="font-bold">${totalSubtotal.toFixed(2)}</span>
+                <span className="font-bold">${totalSubtotal}</span>
               </div>
 
               <Button
-                onClick={handleCheckout}
-                disabled={checkoutLoading}
-                className="text-white w-full py-3 text-sm sm:text-base hover:bg-blue-700 transition"
+                // onClick={handleCheckout}
+                // disabled={checkoutLoading}
+                className="text-white w-full py-3 text-sm sm:text-base"
               >
-                {checkoutLoading ? "Processing..." : "Proceed To Checkout"}
+                {/* {checkoutLoading ? "Processing..." : "Proceed To Checkout"} */}
+                Proceed To Checkout
               </Button>
             </div>
           </div>

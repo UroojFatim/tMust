@@ -23,10 +23,10 @@ export default function Collections({ initialCollections }) {
   const hasInitialCollections = safeCollections.length > 0;
 
   const imageUrls = [
+    "/collections/kalaam.png",
     "/collections/luxury.png",
-    "/collections/semiformal.png",
-    "/collections/Ethnic.png",
-    "/collections/smartcasual.png",
+    "/collections/semi-formal.png",
+    "/collections/virasat.png",
   ];
 
   useEffect(() => {
