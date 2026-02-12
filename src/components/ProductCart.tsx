@@ -8,24 +8,50 @@ const colorClass: Record<string, string> = {
   black: "bg-black",
   white: "bg-white border",
   navy: "bg-blue-900",
+  "navy blue": "bg-blue-900",
   gray: "bg-gray-400",
+  grey: "bg-gray-400",
   pink: "bg-pink-300",
+  "shocking pink": "bg-pink-500",
   red: "bg-red-500",
   blue: "bg-blue-500",
+  "light blue": "bg-blue-300",
+  "dark blue": "bg-blue-800",
   beige: "bg-[#e7d3b1]",
   brown: "bg-amber-700",
   orange: "bg-orange-500",
+  yellow: "bg-yellow-400",
+  maroon: "bg-red-900",
   "dark brown": "bg-amber-900",
+  green: "bg-green-500",
+  "dark green": "bg-green-800",
+  "mehndi green": "bg-emerald-700",
+  purple: "bg-purple-500",
+  magenta: "bg-fuchsia-500",
+  "aqua blue": "bg-cyan-400",
+  teal: "bg-teal-600",
+  "light teal": "bg-teal-300",
+  "blue/green": "bg-emerald-500",
+  gold: "bg-yellow-600",
+  peach: "bg-orange-300",
+  mustard: "bg-yellow-700",
+  "black/silver": "bg-gray-800",
+  "red and black": "bg-red-700",
+  "black floral": "bg-gray-900",
 };
 
-const ProductCard: FC<{ item: any, linkTo?: string, onColorSelect?: () => void }> = ({ item, linkTo, onColorSelect }) => {
+const ProductCard: FC<{
+  item: any;
+  linkTo?: string;
+  onColorSelect?: () => void;
+}> = ({ item, linkTo, onColorSelect }) => {
   const [hovered, setHovered] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
   // Extract data from MongoDB product structure
   const variants = useMemo(() => item?.variants || [], [item?.variants]);
   const firstVariant = variants[0];
-  
+
   // Get all unique colors from variants
   const colors = useMemo(() => {
     return variants.map((v: any) => v.color).filter(Boolean);
@@ -45,7 +71,11 @@ const ProductCard: FC<{ item: any, linkTo?: string, onColorSelect?: () => void }
   // Get current variant based on selected color or first variant
   const currentVariant = useMemo(() => {
     if (selectedColor) {
-      return variants.find((v: any) => v.color?.toLowerCase() === selectedColor.toLowerCase()) || firstVariant;
+      return (
+        variants.find(
+          (v: any) => v.color?.toLowerCase() === selectedColor.toLowerCase(),
+        ) || firstVariant
+      );
     }
     return firstVariant;
   }, [selectedColor, variants, firstVariant]);
@@ -61,8 +91,8 @@ const ProductCard: FC<{ item: any, linkTo?: string, onColorSelect?: () => void }
   }, [hovered, img0, img1]);
 
   return (
-    <Link 
-      href={linkTo ?? '#'}
+    <Link
+      href={linkTo ?? "#"}
       className="block group rounded-2xl border bg-white overflow-hidden shadow-sm hover:shadow-lg transition"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -117,23 +147,28 @@ const ProductCard: FC<{ item: any, linkTo?: string, onColorSelect?: () => void }
         {colors.length > 0 && (
           <div className="mt-3 flex items-center gap-2 flex-wrap">
             {colors.map((color: string, idx: number) => {
-              const selected = selectedColor?.toLowerCase() === color?.toLowerCase();
-              const normalizedColor = color.toLowerCase().replace(/\s+/g, ' ');
+              const selected =
+                selectedColor?.toLowerCase() === color?.toLowerCase();
+              const normalizedColor = color.toLowerCase().replace(/\s+/g, " ");
               return (
                 <button
                   key={color + idx}
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    e.preventDefault(); 
-                    setSelectedColor(color); 
-                    onColorSelect?.(); 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setSelectedColor(color);
+                    onColorSelect?.();
                   }}
-                  className={`flex items-center gap-1.5 px-2 py-1 rounded-full border transition-all ${selected ? 'ring-2 ring-gray-900' : ''}`}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded-full border transition-all ${selected ? "ring-2 ring-gray-900" : ""}`}
                   aria-label={`Select ${color}`}
                   title={color}
                 >
-                  <span className={`inline-block h-4 w-4 rounded-full ${colorClass[normalizedColor] ?? 'bg-gray-200'} border`} />
-                  <span className="text-xs text-gray-700 capitalize">{color}</span>
+                  <span
+                    className={`inline-block h-4 w-4 rounded-full ${colorClass[normalizedColor] ?? "bg-gray-200"} border`}
+                  />
+                  <span className="text-xs text-gray-700 capitalize">
+                    {color}
+                  </span>
                 </button>
               );
             })}

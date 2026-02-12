@@ -304,9 +304,9 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
     <div className="flex pt-12 px-3 sm:px-4">
       <div key={foundData._id} className="w-full">
         {/* First Row */}
-        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 items-start">
           {/* Thumbnails */}
-          <div className="flex lg:flex-col order-2 lg:order-1 gap-2 overflow-x-auto lg:overflow-y-auto lg:w-24">
+          <div className="flex lg:flex-col order-2 lg:order-1 gap-2 overflow-x-auto lg:overflow-y-auto lg:w-24 lg:max-h-[550px] xl:max-h-[950px]">
             {allProductImages?.map((_imageObj: any, index: number) => (
               <button
                 key={_imageObj?.url || index}
@@ -318,9 +318,9 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
                   alt={_imageObj.alt || foundData.title || "Product image"}
                   width={100}
                   height={100}
-                  className={`rounded transition-all w-16 h-16 sm:w-20 sm:h-20 lg:w-32 lg:h-32 object-cover ${
+                  className={`rounded transition-all w-20 h-28 lg:w-24 lg:h-32 object-cover ${
                     selectedImageIndex === index
-                      ? ""
+                      ? "ring-2 ring-gray-900"
                       : "opacity-60 hover:opacity-100"
                   }`}
                 />

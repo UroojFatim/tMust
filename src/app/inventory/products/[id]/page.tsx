@@ -294,6 +294,99 @@ export default function InventoryProductDetailPage({
     });
   };
 
+  const abbreviate = (value: string): string => {
+    const clean = String(value || "").trim();
+    if (!clean) return "NA";
+    const words = clean
+      .toUpperCase()
+      .replace(/[^A-Z0-9\s]/g, " ")
+      .split(/\s+/)
+      .filter(Boolean);
+
+    if (words.length === 1) {
+      return words[0].slice(0, 3);
+    }
+
+    return words.map((word) => word[0]).join("");
+  };
+
+  const normalizeSize = (value: string): string => {
+    const clean = String(value || "").trim().toUpperCase();
+    const map: Record<string, string> = {
+      XS: "XS",
+      S: "S",
+      SM: "S",
+      SMALL: "S",
+      M: "M",
+      MEDIUM: "M",
+      L: "L",
+      LARGE: "L",
+      XL: "XL",
+      XXL: "XXL",
+      XXXL: "XXXL",
+    };
+    if (map[clean]) return map[clean];
+    if (clean.includes("EXTRA") && clean.includes("SMALL")) return "XS";
+    if (clean.includes("EXTRA") && clean.includes("LARGE")) return "XL";
+    return clean.replace(/[^A-Z0-9]/g, "").slice(0, 4) || "NA";
+  };
+
+  const generateSKU = (fabricValue: string, styleValue: string, color: string, size: string): string => {
+    const parts = [
+      "MUSTT",
+      abbreviate(editData?.collection || ""),
+      abbreviate(fabricValue),
+      abbreviate(styleValue),
+      abbreviate(color),
+      normalizeSize(size),
+    ];
+    return parts.filter(Boolean).join("-");
+  };
+
+  const handleSaveSize = (variantIndex: number, sizeIndex: number) => {
+    const variant = editData.variants[variantIndex];
+    const size = variant.sizes[sizeIndex];
+
+    if (!size.size?.trim()) {
+      handleError("Please enter a size first.");
+      return;
+    }
+
+    if (!variant.color?.trim()) {
+      handleError("Please enter a color for this variant first.");
+      return;
+    }
+
+    // Extract fabric from product details
+    const detailsArray = Array.isArray(editData.details) ? editData.details : [];
+    const fabricDetail = detailsArray.find((detail: any) =>
+      String(detail?.key || "")
+        .toLowerCase()
+        .trim()
+        .match(/fabric|material|work/)
+    );
+    const fabricValue = fabricDetail
+      ? String(fabricDetail.valueHtml || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
+      : "";
+
+    const styleValue = Array.isArray(editData.style)
+      ? String(editData.style[0] || "").trim()
+      : String(editData.style || "").trim();
+
+    const sku = generateSKU(fabricValue, styleValue, variant.color, size.size);
+
+    setEditData((prev: any) => {
+      const updatedVariants = [...prev.variants];
+      updatedVariants[variantIndex].sizes[sizeIndex] = {
+        ...updatedVariants[variantIndex].sizes[sizeIndex],
+        sku: sku,
+        barcode: sku,
+      };
+      return { ...prev, variants: updatedVariants };
+    });
+    handleSuccess(`Size saved! SKU: ${sku}`);
+  };
+
   const printBarcode = (size: any, product: any) => {
     // Get variant info to display color
     const variant = product.variants?.find((v: any) => 
@@ -495,7 +588,10 @@ export default function InventoryProductDetailPage({
           {!isEditing && (
             <>
               <button
-                onClick={() => setIsEditing(true)}
+                onClick={() => {
+                  setEditData(product);
+                  setIsEditing(true);
+                }}
                 className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition"
               >
                 Edit
@@ -601,7 +697,13 @@ export default function InventoryProductDetailPage({
               </label>
               {isEditing ? (
                 <select
-                  value={Array.isArray(editData?.style) && editData.style.length > 0 ? editData.style[0] : ""}
+                  value={
+                    Array.isArray(editData?.style) && editData.style.length > 0
+                      ? String(editData.style[0]).trim()
+                      : typeof editData?.style === "string"
+                      ? String(editData.style).trim()
+                      : ""
+                  }
                   onChange={(e) => handleEditChange("style", e.target.value ? [e.target.value] : [])}
                   className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
                     validationErrors.basicInfo && (!Array.isArray(editData?.style) || editData.style.length === 0)
@@ -874,7 +976,7 @@ export default function InventoryProductDetailPage({
                         <th className="px-3 py-2">Price Delta</th>
                         <th className="px-3 py-2">SKU</th>
                         <th className="px-3 py-2">Barcode</th>
-                        {!isEditing && <th className="px-3 py-2 text-right">Actions</th>}
+                        <th className="px-3 py-2 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -914,12 +1016,12 @@ export default function InventoryProductDetailPage({
                                 <input
                                   type="number"
                                   step="0.01"
-                                  value={size.priceDelta ?? 0}
+                                  value={isNaN(size.priceDelta) ? 0 : (size.priceDelta ?? 0)}
                                   onChange={(e) => handleSizeChange(variantIndex, sizeIndex, "priceDelta", parseFloat(e.target.value))}
                                   className="w-full rounded border border-slate-200 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 />
                               ) : (
-                                size.priceDelta ?? 0
+                                isNaN(size.priceDelta) ? 0 : (size.priceDelta ?? 0)
                               )}
                             </td>
                             <td className="px-3 py-2">
@@ -962,23 +1064,45 @@ export default function InventoryProductDetailPage({
                                 )
                               )}
                             </td>
-                            {!isEditing && (
-                              <td className="px-3 py-2 text-right">
-                                {size.sku && size.barcode && product.slug && (
+                            <td className="px-3 py-2 text-right">
+                              {isEditing ? (
+                                <div className="flex gap-1 justify-end">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveSize(variantIndex, sizeIndex)}
+                                    className="rounded bg-green-600 px-2 py-1 text-xs font-semibold text-white hover:bg-green-700 transition"
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updatedSizes = variant.sizes.filter(
+                                        (_: any, idx: number) => idx !== sizeIndex
+                                      );
+                                      handleVariantChange(variantIndex, "sizes", updatedSizes);
+                                    }}
+                                    className="rounded bg-red-600 px-2 py-1 text-xs font-semibold text-white hover:bg-red-700 transition"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              ) : (
+                                size.sku && size.barcode && product.slug && (
                                   <button
                                     onClick={() => printBarcode(size, product)}
                                     className="rounded bg-blue-600 px-2 py-1 text-xs font-semibold text-white hover:bg-blue-700 transition"
                                   >
                                     Print
                                   </button>
-                                )}
-                              </td>
-                            )}
+                                )
+                              )}
+                            </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td className="px-3 py-3 text-slate-400" colSpan={!isEditing ? 6 : 5}>
+                          <td className="px-3 py-3 text-slate-400" colSpan={6}>
                             No sizes.
                           </td>
                         </tr>
@@ -986,6 +1110,21 @@ export default function InventoryProductDetailPage({
                     </tbody>
                   </table>
                 </div>
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updatedSizes = [
+                        ...(variant.sizes || []),
+                        { size: "", quantity: 0, priceDelta: 0, sku: "", barcode: "" },
+                      ];
+                      handleVariantChange(variantIndex, "sizes", updatedSizes);
+                    }}
+                    className="mt-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600 hover:border-slate-400 hover:bg-slate-100 transition"
+                  >
+                    + Add Size
+                  </button>
+                )}
               </div>
             ))
           ) : (
