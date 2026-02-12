@@ -18,15 +18,20 @@ type ProductItem = {
   title?: string;
   slug?: string;
   description?: string;
+  shortDescription?: string;
   basePrice?: number;
   productCode?: string;
   collection?: string;
   collectionSlug?: string;
   style?: string;
   styleSlug?: string;
+  tags?: string[];
+  details?: Array<{ key: string; valueHtml: string }>;
+  purchasePrice?: number;
   variants?: Array<{ images?: Array<{ url?: string }> }>;
   images?: Array<{ url?: string }>;
   createdAt?: string;
+  updatedAt?: string;
 };
 
 const serializeProducts = (products: any[]): ProductItem[] =>
@@ -35,15 +40,20 @@ const serializeProducts = (products: any[]): ProductItem[] =>
     title: product.title,
     slug: product.slug,
     description: product.description,
+    shortDescription: product.shortDescription,
     basePrice: product.basePrice,
     productCode: product.productCode,
     collection: product.collection,
     collectionSlug: product.collectionSlug,
     style: product.style,
     styleSlug: product.styleSlug,
+    tags: product.tags,
+    details: product.details,
+    purchasePrice: product.purchasePrice,
     variants: product.variants,
     images: product.images,
     createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
   }));
 
 const serializeCollections = (collections: any[]): CollectionItem[] =>
@@ -103,33 +113,36 @@ export default async function Home() {
     <section>
       <Hero></Hero>
       {/* <Promotions></Promotions> */}
-      <ShopByCollection
+      {/* <ShopByCollection
         initialCollections={collections}
         initialProducts={products}
-      />
+      /> */}
       <Collections initialCollections={collections} />
       <ImageSection
-        desktopSrc="/hero/ethniccollectiondesktop.jpg"
-        mobileSrc="/hero/ethniccollectionmobile.png"
+        desktopSrc="/hero/virasatcollectiondesktop.png"
+        mobileSrc="/hero/virasatcollectionmobile.png"
         alt="Hero Section 1"
-        collectionName="Ethnic Collection"
-        collectionSlug="ethnic-collection"
+        collectionName="Virasat Collection"
+        collectionSlug="virasat-collection"
+        shopNow={true}
       />
       <EthnicCollection initialProducts={ethnicProducts} />
       <ImageSection
         desktopSrc="/hero/luxurycollectiondesktop.png"
-        mobileSrc="/hero/luxurycollectionmobile.jpg"
+        mobileSrc="/hero/luxurycollectionmobile.png"
         alt="Hero Section 2"
         collectionName="Luxury Collection"
         collectionSlug="luxury-collection"
+        shopNow={true}
       />
       <LuxuryCollection initialProducts={luxuryProducts} />
       <ImageSection
-        desktopSrc="/hero/suficollectiondesktop.png"
-        mobileSrc="/hero/suficollectionmobile.jpg"
+        desktopSrc="/hero/kalaamcollectiondesktop.png"
+        mobileSrc="/hero/kalaamcollectionmobile.png"
         alt="Hero Section 3"
-        collectionName="Sufi Collection"
-        collectionSlug="sufi-collection"
+        collectionName="Kalaam Collection"
+        collectionSlug="kalaam-collection"
+        shopNow={true}
       />
       <AfsanaShowcase />
       {/* <SufiCollection /> */}

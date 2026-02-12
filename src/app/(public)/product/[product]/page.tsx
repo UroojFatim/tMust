@@ -46,7 +46,7 @@ interface IProduct {
 }
 const getProductImages = (product: IProduct) => {
   const variantImages = (product.variants || []).flatMap(
-    (variant) => variant.images || []
+    (variant) => variant.images || [],
   );
   const rootImages = (product as { images?: Array<{ url: string }> }).images;
   const allImages = [...(rootImages || []), ...variantImages];
@@ -64,7 +64,7 @@ const getProductSku = (product: IProduct) => {
 
 const hasInventory = (product: IProduct) =>
   (product.variants || []).some((variant) =>
-    (variant.sizes || []).some((size) => (size?.quantity ?? 0) > 0)
+    (variant.sizes || []).some((size) => (size?.quantity ?? 0) > 0),
   );
 
 export const revalidate = 3600;
@@ -121,9 +121,7 @@ export default async function Page({
   params: Promise<{ product: string }>;
 }) {
   const { product: productSlug } = await params;
-  const rawProduct = (await getProductBySlug(productSlug)) as
-    | IProduct
-    | null;
+  const rawProduct = (await getProductBySlug(productSlug)) as IProduct | null;
 
   if (!rawProduct) {
     notFound();
@@ -209,7 +207,9 @@ export default async function Page({
           __html: JSON.stringify(productSchema),
         }}
       />
-      <ProductDetails foundData={foundData} />
+      <div className="pt-10 lg:pt-20">
+        <ProductDetails foundData={foundData} />
+      </div>
     </Wrapper>
   );
 }

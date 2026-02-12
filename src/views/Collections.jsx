@@ -23,10 +23,10 @@ export default function Collections({ initialCollections }) {
   const hasInitialCollections = safeCollections.length > 0;
 
   const imageUrls = [
+    "/collections/kalaam.png",
     "/collections/luxury.png",
-    "/collections/semiformal.png",
-    "/collections/Ethnic.png",
-    "/collections/smartcasual.png",
+    "/collections/semi-formal.png",
+    "/collections/virasat.png",
   ];
 
   useEffect(() => {
@@ -67,7 +67,7 @@ export default function Collections({ initialCollections }) {
 
   return (
     <section className="w-full py-16 bg-white">
-      <div className="max-w-6xl mx-auto px-4 text-center">
+      <div className="max-w-screen-2xl mx-auto px-4 lg:px-12 text-center">
 
         {/* Heading */}
         <motion.h2
@@ -81,7 +81,7 @@ export default function Collections({ initialCollections }) {
         </motion.h2>
 
         {/* Circles */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 place-items-center">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 place-items-center">
           {items.map((item, index) => (
             <motion.div
               key={index}
@@ -99,13 +99,14 @@ export default function Collections({ initialCollections }) {
                 <motion.div
                   whileHover={{ scale: 1.08 }}
                   transition={{ type: "spring", stiffness: 200 }}
-                  className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border border-gray-200 shadow-md"
+                  className="w-56 h-56 md:w-40 md:h-40 rounded-full overflow-hidden border border-gray-200 shadow-md"
                 >
                   <Image
                     src={item.image}
                     alt={item.title}
                     width={160}
                     height={160}
+                    // fill
                     sizes="(max-width: 768px) 144px, 260px"
                     className="h-full w-full object-cover"
                   />
@@ -115,7 +116,7 @@ export default function Collections({ initialCollections }) {
               {/* Title */}
               <Link
                 href={`/collection/${item.slug}`}
-                className="mt-4 text-sm md:text-base font-medium transition group-hover:opacity-80"
+                className="mt-4 text-base font-medium transition group-hover:opacity-80"
               >
                 {item.title}
               </Link>

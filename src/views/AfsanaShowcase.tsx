@@ -22,7 +22,7 @@ const AfsanaShowcase = () => {
         },
       }}
     >
-      <div className="mx-auto w-full max-w-screen-2xl px-5 sm:px-8 md:px-20 ">
+      <div className="mx-auto w-full max-w-screen-2xl px-6 md:px-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <motion.div
             className="flex flex-col justify-between gap-6"
@@ -44,11 +44,18 @@ const AfsanaShowcase = () => {
               >
                 Afsana
               </motion.h2>
+              <motion.h2
+                className="font-serif text-base leading-[1.1] text-[#5b3a31]"
+                variants={{
+                  hidden: { opacity: 0, y: 12 },
+                  show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+                }}
+              >
+                From Kalaam Collection
+              </motion.h2>
               <p className="max-w-md text-sm leading-7 text-[#80726b] sm:text-base">
-                Afsana is a Lorem ipsum dolor sit, amet consectetur adipisicing
-                elit. Modi commodi fugit soluta libero quae, maiores porro sed,
-                id, consectetur iste consequuntur perferendis nisi in ipsa
-                quisquam enim atque vero hic.
+                Minimal refined detailing with digitally designed silk dupattas
+                featuring poetic script and artistic motifs.
               </p>
               <motion.div
                 variants={{
@@ -61,7 +68,9 @@ const AfsanaShowcase = () => {
                   className="inline-flex items-center gap-2 rounded-full border border-[#5b3a31] px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#5b3a31] transition hover:bg-[#5b3a31] hover:text-white"
                 >
                   Shop Now
-                  <span aria-hidden className="text-base">→</span>
+                  <span aria-hidden className="text-base">
+                    →
+                  </span>
                 </Link>
               </motion.div>
             </div>
@@ -71,7 +80,12 @@ const AfsanaShowcase = () => {
             className="relative"
             variants={{
               hidden: { opacity: 0, y: 28, scale: 0.98 },
-              show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7 } },
+              show: {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                transition: { duration: 0.7 },
+              },
             }}
           >
             <motion.div
@@ -110,10 +124,10 @@ const AfsanaShowcase = () => {
                 <Image
                   src={AfsanaDupattaShowcase}
                   alt="Editorial portrait"
-                  className="h-[240px] w-full object-cover sm:h-[280px]"
+                  className="h-[240px] w-[240px] object-cover sm:h-[280px]"
                 />
               </motion.div>
-              <div className="space-y-2">
+              <div className="space-y-2 flex justify-end">
                 <motion.h3
                   className="text-sm font-semibold uppercase tracking-[0.08em] text-[#3f302a]"
                   variants={{

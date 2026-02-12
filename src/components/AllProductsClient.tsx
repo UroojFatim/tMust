@@ -2,10 +2,16 @@
 
 import { useMemo, useState } from "react";
 import ProductCart from "@/components/ProductCart";
-import FiltersSidebar from "@/components/FiltersSidebar";
+import FiltersTopBar from "@/components/FiltersSidebar";
 
-export default function AllProductsClient({ products }: { products: any[] }) {
-  const [price, setPrice] = useState([0, 5000]);
+export default function AllProductsClient({
+  products,
+  showFilters = true,
+}: {
+  products: any[];
+  showFilters?: boolean;
+}) {
+  const [price, setPrice] = useState<[number, number | null]>([0, null]);
   const [sizes, setSizes] = useState<string[]>([]);
   const [colors, setColors] = useState<string[]>([]);
 
@@ -26,7 +32,7 @@ export default function AllProductsClient({ products }: { products: any[] }) {
         .filter(Boolean);
 
       const matchPrice =
-        p.basePrice >= price[0] && p.basePrice <= price[1];
+        price[1] === null || (p.basePrice >= price[0] && p.basePrice <= price[1]);
 
       const matchSize =
         sizes.length === 0 ||
@@ -56,21 +62,20 @@ export default function AllProductsClient({ products }: { products: any[] }) {
   }, [filteredProducts]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 xl:gap-10">
-      {/* LEFT FILTERS */}
-      <FiltersSidebar
-        price={price}
-        setPrice={setPrice}
-        sizes={sizes}
-        setSizes={setSizes}
-        colors={colors}
-        setColors={setColors}
-        total={filteredProducts.length}
-      />
+    <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8 xl:gap-10">
+      {showFilters ? (
+        <FiltersTopBar
+          price={price}
+          setPrice={setPrice}
+          sizes={sizes}
+          setSizes={setSizes}
+          colors={colors}
+          setColors={setColors}
+          total={filteredProducts.length}
+        />
+      ) : null}
 
-      {/* RIGHT PRODUCTS */}
       <div className="flex-1 w-full">
-
         {/* Display products grouped by style */}
         <div className="space-y-8 sm:space-y-10 lg:space-y-12">
           {Object.entries(groupedProducts).map(([styleName, styleProducts]) => (
@@ -81,14 +86,14 @@ export default function AllProductsClient({ products }: { products: any[] }) {
                   {styleName}
                 </h3>
                 <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                  {styleProducts.length} {styleProducts.length === 1 ? 'product' : 'products'}
+                  {styleProducts.length} {styleProducts.length === 1 ? "product" : "products"}
                 </p>
               </div>
 
               {/* Products Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 lg:gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4">
                 {styleProducts.map((product) => (
-                  <ProductCart 
+                  <ProductCart
                     key={product._id}
                     item={product}
                     linkTo={`/product/${product.slug}`}

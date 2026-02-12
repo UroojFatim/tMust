@@ -19,6 +19,7 @@ async function getAllProducts() {
       title: product.title,
       slug: product.slug,
       description: product.description,
+      shortDescription: product.shortDescription,
       basePrice: product.basePrice,
       productCode: product.productCode,
       collection: product.collection,
@@ -26,9 +27,13 @@ async function getAllProducts() {
       style: product.style,
       styleSlug: product.styleSlug,
       styleName: product.style, // Add styleName for grouping
+      tags: product.tags,
+      details: product.details,
+      purchasePrice: product.purchasePrice,
       variants: product.variants,
       images: product.images,
       createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
     }));
 
     return serialized;
