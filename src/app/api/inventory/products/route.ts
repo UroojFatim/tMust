@@ -77,60 +77,42 @@ function generateBarcode(sku: string) {
 
 async function generateNextProductCode(db: any) {
   const prefix = "PD";
-  const counters = db.collection("inventory_counters");
 
-  const existingCounter = await counters.findOne({ _id: "productCode" });
-  if (!existingCounter) {
-    const results = await db
-      .collection("inventory_products")
-      .aggregate([
-        {
-          $match: {
-            productCode: { $regex: `^${prefix}\\d+$` },
-          },
+  // Find the highest existing product code
+  const results = await db
+    .collection("inventory_products")
+    .aggregate([
+      {
+        $match: {
+          productCode: { $regex: `^${prefix}\\d+$` },
         },
-        {
-          $addFields: {
-            codeNumber: {
-              $toInt: {
-                $substrBytes: [
-                  "$productCode",
-                  prefix.length,
-                  { $subtract: [{ $strLenBytes: "$productCode" }, prefix.length] },
-                ],
-              },
+      },
+      {
+        $addFields: {
+          codeNumber: {
+            $toInt: {
+              $substrBytes: [
+                "$productCode",
+                prefix.length,
+                { $subtract: [{ $strLenBytes: "$productCode" }, prefix.length] },
+              ],
             },
           },
         },
-        { $sort: { codeNumber: -1 } },
-        { $limit: 1 },
-        { $project: { codeNumber: 1 } },
-      ])
-      .toArray();
+      },
+      { $sort: { codeNumber: -1 } },
+      { $limit: 1 },
+      { $project: { codeNumber: 1 } },
+    ])
+    .toArray();
 
-    const startingValue = results[0]?.codeNumber || 0;
-    await counters.insertOne({ _id: "productCode", seq: startingValue });
-  }
+  // Get the next number after the highest existing code
+  const highestNumber = results[0]?.codeNumber || 1;
+  const nextNumber = highestNumber + 1;
+  const padded = String(nextNumber).padStart(3, "0");
+  const code = `${prefix}${padded}`;
 
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const counter = await counters.findOneAndUpdate(
-      { _id: "productCode" },
-      { $inc: { seq: 1 } },
-      { upsert: true, returnDocument: "after" }
-    );
-    const nextNumber = counter.value?.seq || 1;
-    const padded = String(nextNumber).padStart(3, "0");
-    const code = `${prefix}${padded}`;
-
-    const exists = await db
-      .collection("inventory_products")
-      .findOne({ productCode: code }, { projection: { _id: 1 } });
-    if (!exists) {
-      return code;
-    }
-  }
-
-  throw new Error("Unable to generate a unique product code.");
+  return code;
 }
 
 export async function GET(request: NextRequest) {
