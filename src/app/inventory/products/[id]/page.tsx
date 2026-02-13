@@ -68,7 +68,16 @@ export default function InventoryProductDetailPage({
 
         const productData = await productResponse.json();
         setProduct(productData.product);
-        setEditData(productData.product);
+        // Normalize style to array format for consistency
+        const normalizedProduct = {
+          ...productData.product,
+          style: Array.isArray(productData.product.style)
+            ? productData.product.style
+            : productData.product.style
+            ? [productData.product.style]
+            : [],
+        };
+        setEditData(normalizedProduct);
 
         if (collectionsResponse.ok) {
           const collectionsData = await collectionsResponse.json();
@@ -114,8 +123,15 @@ export default function InventoryProductDetailPage({
       errors.basicInfo = "Slug is required.";
     } else if (!editData.collection) {
       errors.basicInfo = "Collection is required.";
-    } else if (!Array.isArray(editData.style) || editData.style.length === 0) {
-      errors.basicInfo = "At least one style is required.";
+    } else {
+      // Check if style is valid (can be string or array)
+      const hasStyle = Array.isArray(editData.style)
+        ? editData.style.length > 0 && editData.style.some((s: any) => String(s).trim())
+        : typeof editData.style === "string" && editData.style.trim();
+      
+      if (!hasStyle) {
+        errors.basicInfo = "At least one style is required.";
+      }
     }
 
     // Price validations
@@ -294,6 +310,29 @@ export default function InventoryProductDetailPage({
     });
   };
 
+  const handleAddVariant = () => {
+    setEditData((prev: any) => {
+      const newVariant = {
+        color: "",
+        images: [{ url: "", alt: "" }],
+        sizes: [{ size: "", quantity: 0, priceDelta: 0, sku: "", barcode: "" }],
+      };
+      return {
+        ...prev,
+        variants: [...(prev.variants || []), newVariant],
+      };
+    });
+  };
+
+  const handleRemoveVariant = (variantIndex: number) => {
+    setEditData((prev: any) => {
+      const updatedVariants = prev.variants.filter(
+        (_: any, idx: number) => idx !== variantIndex
+      );
+      return { ...prev, variants: updatedVariants };
+    });
+  };
+
   const abbreviate = (value: string): string => {
     const clean = String(value || "").trim();
     if (!clean) return "NA";
@@ -335,7 +374,6 @@ export default function InventoryProductDetailPage({
     const parts = [
       "MUSTT",
       abbreviate(editData?.collection || ""),
-      abbreviate(fabricValue),
       abbreviate(styleValue),
       abbreviate(color),
       normalizeSize(size),
@@ -354,6 +392,22 @@ export default function InventoryProductDetailPage({
 
     if (!variant.color?.trim()) {
       handleError("Please enter a color for this variant first.");
+      return;
+    }
+
+    // Check if quantity is zero
+    const quantity = Number(size.quantity || 0);
+    if (quantity === 0) {
+      setEditData((prev: any) => {
+        const updatedVariants = [...prev.variants];
+        updatedVariants[variantIndex].sizes[sizeIndex] = {
+          ...updatedVariants[variantIndex].sizes[sizeIndex],
+          sku: "",
+          barcode: "",
+        };
+        return { ...prev, variants: updatedVariants };
+      });
+      handleSuccess("Size saved! (SKU and barcode will be generated when quantity is added)");
       return;
     }
 
@@ -452,15 +506,15 @@ export default function InventoryProductDetailPage({
                 width: 100%;
               }
               .product-name {
-                font-size: 10px;
+                font-size: 12px;
                 font-weight: bold;
-                line-height: 1.2;
+                line-height: 1;
                 margin-bottom: 8px;
                 word-wrap: break-word;
               }
               .product-details {
-                font-size: 8px;
-                line-height: 1.5;
+                font-size: 10px;
+                line-height: 1.3;
                 width: 100%;
               }
               .detail-row {
@@ -706,7 +760,7 @@ export default function InventoryProductDetailPage({
                   }
                   onChange={(e) => handleEditChange("style", e.target.value ? [e.target.value] : [])}
                   className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
-                    validationErrors.basicInfo && (!Array.isArray(editData?.style) || editData.style.length === 0)
+                    validationErrors.basicInfo && validationErrors.basicInfo.includes("style")
                       ? 'border-red-500 focus:ring-red-500'
                       : 'border-slate-200 focus:ring-blue-500'
                   }`}
@@ -882,9 +936,20 @@ export default function InventoryProductDetailPage({
                   </div>
                 )}
                 <div className="mb-4 pb-4 border-b border-slate-200">
-                  <label className="block text-sm font-semibold text-slate-600 mb-2">
-                    Color: <span className="text-red-600">*</span>
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-semibold text-slate-600">
+                      Color: <span className="text-red-600">*</span>
+                    </label>
+                    {isEditing && editData.variants.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveVariant(variantIndex)}
+                        className="text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition"
+                      >
+                        Remove Variant
+                      </button>
+                    )}
+                  </div>
                   {isEditing ? (
                     <input
                       type="text"
@@ -947,15 +1012,17 @@ export default function InventoryProductDetailPage({
                       {Array.isArray(variant.images) && variant.images.length ? (
                         <div className="flex flex-wrap gap-3">
                           {variant.images.map((img: any, imgIndex: number) => (
-                            <div key={imgIndex} className="h-20 w-20 overflow-hidden rounded-lg border">
-                              <Image
-                                src={img.url}
-                                alt={img.alt || "Product image"}
-                                width={80}
-                                height={80}
-                                className="h-full w-full object-cover"
-                              />
-                            </div>
+                            img.url && (
+                              <div key={imgIndex} className="h-20 w-20 overflow-hidden rounded-lg border">
+                                <Image
+                                  src={img.url}
+                                  alt={img.alt || "Product image"}
+                                  width={80}
+                                  height={80}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                            )
                           ))}
                         </div>
                       ) : (
@@ -1129,10 +1196,19 @@ export default function InventoryProductDetailPage({
             ))
           ) : (
             <p className="text-sm text-slate-500">No variants added.</p>
-            )}
-          </div>
+          )}
+          {isEditing && (
+            <button
+              type="button"
+              onClick={handleAddVariant}
+              className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600 hover:border-slate-400 hover:bg-slate-100 transition w-full"
+            >
+              + Add Variant
+            </button>
+          )}
         </div>
       </div>
+    </div>
     </div>
   );
 }
