@@ -122,11 +122,11 @@ const ProductCard: FC<{
           </div>
         )}
 
-        {/* Style label at bottom */}
-        {item?.style && (
-          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3">
-            <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-gray-900 backdrop-blur border">
-              {item.style}
+        {/* Style label at top right */}
+        {(item?.styleName || item?.style) && (
+          <div className="absolute top-3 right-3">
+            <span className="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-gray-900 backdrop-blur border">
+              {item.styleName || item.style}
             </span>
           </div>
         )}
