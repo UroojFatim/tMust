@@ -77,7 +77,7 @@ export default function Collections({ initialCollections }) {
           viewport={{ once: false, amount: 0.3 }}   // 🔁 animate every time
           className="font-PT_Serif text-3xl md:text-4xl font-semibold mb-12"
         >
-          SHOP BY COLLECTIONS
+          SHOP BY COLLECTION
         </motion.h2>
 
         {/* Circles */}
