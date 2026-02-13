@@ -9,9 +9,9 @@ export default function PublicLayout({
 }) {
   return (
     <CartProvider>
-      {/* <Header /> */}
+      <Header />
       <main>{children}</main>
-      {/* <Footer /> */}
+      <Footer />
     </CartProvider>
   );
 }
