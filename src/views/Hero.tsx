@@ -88,7 +88,7 @@ const Hero = () => {
                   alt={slide.alt}
                   fill
                   priority={slideIndex === 0}
-                  className="object-cover object-top md:object-center"
+                  className="object-cover object-top md:object-top"
                   sizes="100vw"
                 />
               </div>
