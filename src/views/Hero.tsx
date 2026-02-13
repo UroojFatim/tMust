@@ -70,7 +70,7 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative w-full h-screen min-h-[520px] md:min-h-[650px]">
+    <section className="relative w-full h-full min-h-[520px] md:min-h-[800px]">
       <div className="absolute inset-0 z-0">
         <div className="overflow-hidden h-full">
           <div
