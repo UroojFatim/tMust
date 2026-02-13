@@ -30,16 +30,21 @@ export default async function Page({ params }: { params: Promise<{ category: str
     title: product.title,
     slug: product.slug,
     description: product.description,
+    shortDescription: product.shortDescription,
     basePrice: product.basePrice,
     productCode: product.productCode,
     collection: product.collection,
     collectionSlug: product.collectionSlug,
     style: product.style,
     styleSlug: product.styleSlug,
+    tags: product.tags,
+    details: product.details,
+    purchasePrice: product.purchasePrice,
     variants: product.variants,
     images: product.images,
     category: product.category,
     createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
   }));
 
   const filtered = serialized.filter((item: any) => item.category === category);

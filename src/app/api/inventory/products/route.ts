@@ -75,6 +75,46 @@ function generateBarcode(sku: string) {
   return sku;
 }
 
+async function generateNextProductCode(db: any) {
+  const prefix = "PD";
+
+  // Find the highest existing product code
+  const results = await db
+    .collection("inventory_products")
+    .aggregate([
+      {
+        $match: {
+          productCode: { $regex: `^${prefix}\\d+$` },
+        },
+      },
+      {
+        $addFields: {
+          codeNumber: {
+            $toInt: {
+              $substrBytes: [
+                "$productCode",
+                prefix.length,
+                { $subtract: [{ $strLenBytes: "$productCode" }, prefix.length] },
+              ],
+            },
+          },
+        },
+      },
+      { $sort: { codeNumber: -1 } },
+      { $limit: 1 },
+      { $project: { codeNumber: 1 } },
+    ])
+    .toArray();
+
+  // Get the next number after the highest existing code
+  const highestNumber = results[0]?.codeNumber || 1;
+  const nextNumber = highestNumber + 1;
+  const padded = String(nextNumber).padStart(3, "0");
+  const code = `${prefix}${padded}`;
+
+  return code;
+}
+
 export async function GET(request: NextRequest) {
   const session = getInventorySession(request);
   if (!session) {
@@ -185,6 +225,9 @@ export async function POST(request: NextRequest) {
     }
   );
 
+  const db = await getDatabase();
+  const productCode = await generateNextProductCode(db);
+
   const product = {
     title,
     slug,
@@ -202,15 +245,13 @@ export async function POST(request: NextRequest) {
           }))
           .filter((detail: any) => detail.key && detail.valueHtml)
       : [],
-    productCode: String(body.productCode || "").trim(),
+    productCode,
     purchasePrice: Number(body.purchasePrice || 0),
     basePrice: Number(body.basePrice || 0),
     variants,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
-  const db = await getDatabase();
   const result = await db.collection("inventory_products").insertOne(product);
 
   return NextResponse.json({

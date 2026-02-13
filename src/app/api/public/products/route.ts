@@ -15,15 +15,20 @@ export async function GET() {
       title: product.title,
       slug: product.slug,
       description: product.description,
+      shortDescription: product.shortDescription,
       basePrice: product.basePrice,
       productCode: product.productCode,
       collection: product.collection,
       collectionSlug: product.collectionSlug,
       style: product.style,
       styleSlug: product.styleSlug,
+      tags: product.tags,
+      details: product.details,
+      purchasePrice: product.purchasePrice,
       variants: product.variants,
       images: product.images,
       createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
     }));
 
     return NextResponse.json({ ok: true, products: serialized });

@@ -44,16 +44,34 @@ const Hero = () => {
   useEffect(() => {
     const t = setInterval(() => {
       setIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
-    }, 5000);
+    }, 6000);
     return () => clearInterval(t);
   }, [maxIndex]);
 
-  return (
-    <section className="relative w-full h-[calc(100svh-70px)] md:h-[calc(100vh-90px)] min-h-[520px] md:min-h-[650px]">
+  const goToSlide = (nextIndex: number) => {
+    if (maxIndex === 0) {
+      return;
+    }
+    setIndex(nextIndex);
+  };
 
-      <div
-        className="absolute inset-0 z-0"
-      >
+  const goPrev = () => {
+    if (maxIndex === 0) {
+      return;
+    }
+    setIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
+  };
+
+  const goNext = () => {
+    if (maxIndex === 0) {
+      return;
+    }
+    setIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+  };
+
+  return (
+    <section className="relative w-full h-full min-h-[520px] md:min-h-[800px]">
+      <div className="absolute inset-0 z-0">
         <div className="overflow-hidden h-full">
           <div
             className="flex h-full transition-transform duration-700 ease-in-out"
@@ -70,13 +88,47 @@ const Hero = () => {
                   alt={slide.alt}
                   fill
                   priority={slideIndex === 0}
-                  className="object-cover object-center sm:object-top"
+                  className="object-cover object-top md:object-top"
                   sizes="100vw"
                 />
               </div>
             ))}
           </div>
         </div>
+      </div>
+      <div className="absolute inset-y-0 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
+        <button
+          type="button"
+          onClick={goPrev}
+          className="pointer-events-auto h-9 w-9 rounded-full border border-white/70 bg-black/30 text-white transition hover:bg-black/50"
+          aria-label="Previous slide"
+        >
+          <span aria-hidden="true">&#8249;</span>
+        </button>
+        <button
+          type="button"
+          onClick={goNext}
+          className="pointer-events-auto h-9 w-9 rounded-full border border-white/70 bg-black/30 text-white transition hover:bg-black/50"
+          aria-label="Next slide"
+        >
+          <span aria-hidden="true">&#8250;</span>
+        </button>
+      </div>
+      <div className="absolute inset-x-0 bottom-6 z-10 flex items-center justify-center gap-2">
+        {slides.map((slide, slideIndex) => (
+          <button
+            key={`${slide.alt}-dot`}
+            type="button"
+            onClick={() => goToSlide(slideIndex)}
+            className={`h-2.5 w-2.5 rounded-full border transition-all duration-300 ${
+              slideIndex === index
+                ? "bg-white border-white scale-110"
+                : "bg-transparent border-white/70 hover:bg-white/60"
+            }`}
+            aria-label={`Go to slide ${slideIndex + 1}`}
+            aria-current={slideIndex === index}
+          />
+        ))}
       </div>
     </section>
   );

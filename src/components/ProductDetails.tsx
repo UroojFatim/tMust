@@ -8,7 +8,6 @@ import { toast, ToastContainer } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/components/CartContext";
-import { urlForImage } from "../../sanity/lib/image";
 import Image from "next/image";
 
 const titleCase = (value: string) =>
@@ -25,10 +24,13 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
   const [num, setNum] = useState(1);
 
   // ✅ Extract data from MongoDB structure (variants)
-  const variants = useMemo(() => foundData?.variants || [], [foundData?.variants]);
+  const variants = useMemo(
+    () => foundData?.variants || [],
+    [foundData?.variants],
+  );
 
   // Get all unique sizes from all variants (only those with stock > 0)
-  const sizesFromSanity: string[] = useMemo(() => {
+  const sizesFromVariants: string[] = useMemo(() => {
     const sizeSet = new Set<string>();
     variants.forEach((variant: any) => {
       (variant.sizes || []).forEach((s: any) => {
@@ -39,7 +41,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
   }, [variants]);
 
   // Get all unique colors from variants (only those with at least one size in stock)
-  const colorsFromSanity: string[] = useMemo(() => {
+  const colorsFromVariants: string[] = useMemo(() => {
     return variants
       .filter((v: any) => {
         // Check if this variant has at least one size with stock
@@ -49,14 +51,14 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
       .filter(Boolean);
   }, [variants]);
 
-  const hasSizes = sizesFromSanity.length > 0;
-  const hasColors = colorsFromSanity.length > 0;
+  const hasSizes = sizesFromVariants.length > 0;
+  const hasColors = colorsFromVariants.length > 0;
 
   const [selectedSize, setSelectedSize] = useState<string | null>(
-    sizesFromSanity.length > 0 ? sizesFromSanity[0] : null
+    sizesFromVariants.length > 0 ? sizesFromVariants[0] : null,
   );
   const [selectedColor, setSelectedColor] = useState<string | null>(
-    colorsFromSanity.length > 0 ? colorsFromSanity[0] : null
+    colorsFromVariants.length > 0 ? colorsFromVariants[0] : null,
   );
 
   const [isLoading, setIsLoading] = useState(false);
@@ -108,36 +110,36 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
   // Get available stock for selected size and color
   const availableStock = useMemo(() => {
     if (!selectedSize || !selectedColor) return null;
-    
+
     const variant = variants.find(
-      (v: any) => v.color?.toLowerCase() === selectedColor.toLowerCase()
+      (v: any) => v.color?.toLowerCase() === selectedColor.toLowerCase(),
     );
-    
+
     if (!variant) return null;
-    
+
     const sizeObj = variant.sizes?.find(
-      (s: any) => s.size?.toLowerCase() === selectedSize.toLowerCase()
+      (s: any) => s.size?.toLowerCase() === selectedSize.toLowerCase(),
     );
-    
+
     return sizeObj?.quantity ?? 0;
   }, [selectedSize, selectedColor, variants]);
 
   // Calculate final price based on selected size/color and their price adjustment
   const finalPrice = useMemo(() => {
     const basePrice = Number(foundData?.basePrice || 0);
-    
+
     if (!selectedSize || !selectedColor) return basePrice;
-    
+
     const variant = variants.find(
-      (v: any) => v.color?.toLowerCase() === selectedColor.toLowerCase()
+      (v: any) => v.color?.toLowerCase() === selectedColor.toLowerCase(),
     );
-    
+
     if (!variant) return basePrice;
-    
+
     const sizeObj = variant.sizes?.find(
-      (s: any) => s.size?.toLowerCase() === selectedSize.toLowerCase()
+      (s: any) => s.size?.toLowerCase() === selectedSize.toLowerCase(),
     );
-    
+
     const priceDelta = Number(sizeObj?.priceDelta || 0);
     return basePrice + priceDelta;
   }, [selectedSize, selectedColor, variants, foundData?.basePrice]);
@@ -145,13 +147,13 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
   // Update main image when color changes
   useEffect(() => {
     if (!selectedColor || !currentVariant?.images?.[0]) return;
-    
+
     // Find the index of the first image of the current variant in allProductImages
     const firstVariantImage = currentVariant.images[0];
     const indexInAll = allProductImages.findIndex(
-      (img: any) => img.url === firstVariantImage.url
+      (img: any) => img.url === firstVariantImage.url,
     );
-    
+
     if (indexInAll !== -1) {
       setSelectedImageIndex(indexInAll);
     }
@@ -296,13 +298,15 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
 
   if (!foundData) return null;
 
+  console.log("foundData", foundData);
+
   return (
-    <div className="flex pt-28 lg:pt-32 px-3 sm:px-4">
+    <div className="flex pt-12 px-3 sm:px-4">
       <div key={foundData._id} className="w-full">
         {/* First Row */}
-        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 items-start">
           {/* Thumbnails */}
-          <div className="flex lg:flex-col order-2 lg:order-1 gap-2 overflow-x-auto lg:overflow-y-auto lg:mr-4 lg:w-24">
+          <div className="flex lg:flex-col order-2 lg:order-1 gap-2 overflow-x-auto lg:overflow-y-auto lg:w-24 lg:max-h-[550px] xl:max-h-[950px]">
             {allProductImages?.map((_imageObj: any, index: number) => (
               <button
                 key={_imageObj?.url || index}
@@ -314,9 +318,9 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
                   alt={_imageObj.alt || foundData.title || "Product image"}
                   width={100}
                   height={100}
-                  className={`rounded transition-all w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 object-cover ${
+                  className={`rounded transition-all w-20 h-28 lg:w-24 lg:h-32 object-cover ${
                     selectedImageIndex === index
-                      ? "ring-2 ring-gray-900 ring-offset-0"
+                      ? "ring-2 ring-gray-900"
                       : "opacity-60 hover:opacity-100"
                   }`}
                 />
@@ -336,7 +340,9 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
               />
             ) : (
               <div className="h-64 sm:h-96 lg:h-[500px] w-full bg-gray-100 rounded flex items-center justify-center">
-                <span className="text-gray-400 text-sm sm:text-base">No Image Available</span>
+                <span className="text-gray-400 text-sm sm:text-base">
+                  No Image Available
+                </span>
               </div>
             )}
           </div>
@@ -362,9 +368,11 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
             {/* ✅ SIZE SELECTOR */}
             {hasSizes && (
               <>
-                <h3 className="font-bold mt-4 sm:mt-6 text-sm sm:text-base">SELECT SIZE</h3>
+                <h3 className="font-bold mt-4 sm:mt-6 text-sm sm:text-base">
+                  SELECT SIZE
+                </h3>
                 <div className="flex font-bold gap-2 mt-3 sm:mt-4 text-gray-800 flex-wrap">
-                  {sizesFromSanity.map((size) => (
+                  {sizesFromVariants.map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
@@ -384,9 +392,11 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
             {/* ✅ COLOR SELECTOR */}
             {hasColors && (
               <>
-                <h3 className="font-bold mt-4 sm:mt-6 text-sm sm:text-base">SELECT COLOR</h3>
+                <h3 className="font-bold mt-4 sm:mt-6 text-sm sm:text-base">
+                  SELECT COLOR
+                </h3>
                 <div className="flex font-bold gap-2 mt-3 sm:mt-4 text-gray-800 flex-wrap">
-                  {colorsFromSanity.map((color) => (
+                  {colorsFromVariants.map((color) => (
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
@@ -404,7 +414,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
             )}
 
             {/* Stock Availability - Urgency Message */}
-            {selectedSize && selectedColor && availableStock !== null && availableStock > 0 && availableStock < 10 && (
+            {/* {selectedSize && selectedColor && availableStock !== null && availableStock > 0 && availableStock < 10 && (
               <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-300 rounded-lg shadow-sm">
                 <p className="text-sm sm:text-base text-rose-800 font-semibold flex items-center gap-2">
                   <span className="text-xl">🔥</span>
@@ -414,7 +424,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
                 </p>
                 <p className="text-xs sm:text-sm text-rose-600 mt-1 ml-7">Limited stock - Order now before it&apos;s gone!</p>
               </div>
-            )}
+            )} */}
 
             {/* Quantity */}
             <div className="flex items-center gap-3 sm:gap-4 mt-6 sm:mt-8 flex-wrap">
@@ -453,23 +463,28 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
             <div className="flex flex-col sm:flex-row mt-6 sm:mt-8 gap-3 sm:gap-4 items-start sm:items-center">
               <Button
                 onClick={handleAddToCart}
-                disabled={isLoading || (availableStock !== null && availableStock === 0)}
+                disabled={
+                  isLoading || (availableStock !== null && availableStock === 0)
+                }
                 className="bg-[#212121] text-white font-bold py-3 sm:py-4 px-4 sm:px-6 gap-x-2 text-xs sm:text-sm w-full sm:w-auto lg:max-w-xs border-2 border-solid shadow-md disabled:opacity-70 disabled:cursor-not-allowed hover:bg-gray-900 transition"
               >
-                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" color="#ffffff" />
+                <ShoppingCart
+                  className="h-4 w-4 sm:h-5 sm:w-5"
+                  color="#ffffff"
+                />
                 <div>
-                  {isLoading 
-                    ? "Adding..." 
-                    : availableStock === 0 
-                    ? "Out of Stock" 
-                    : "Add to Cart"}
+                  {isLoading
+                    ? "Adding..."
+                    : availableStock === 0
+                      ? "Out of Stock"
+                      : "Add to Cart"}
                 </div>
               </Button>
 
               <ToastContainer />
 
               <div className="font-bold text-xl sm:text-2xl lg:text-3xl">
-                ${finalPrice.toFixed(2)}
+                ${finalPrice}
               </div>
             </div>
           </div>
@@ -478,9 +493,6 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
         {/* Second Row */}
         <div className="my-8 sm:my-12 md:my-16 lg:my-20 space-y-6 sm:space-y-8 lg:space-y-10 relative">
           <div className="border-b-4 pb-4 sm:pb-6">
-            <h3 className="font-extrabold text-2xl sm:text-3xl lg:text-[7.5rem] leading-tight lg:leading-[151px] text-paragraph opacity-10 lg:opacity-[0.06] lg:w-1/4 -z-10 lg:absolute top-0">
-              Overview
-            </h3>
             <h2 className="tracking-wider font-extrabold text-base sm:text-lg lg:text-xl mt-1">
               Product Information
             </h2>
@@ -499,7 +511,10 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
           {foundData.details && foundData.details.length > 0 && (
             <div className="space-y-4 sm:space-y-6">
               {foundData.details.map((detail: any, idx: number) => (
-                <div key={idx} className="flex flex-col lg:flex-row gap-3 lg:gap-8">
+                <div
+                  key={idx}
+                  className="flex flex-col lg:flex-row gap-3 lg:gap-8"
+                >
                   <div className="lg:basis-1/3 tracking-wider font-bold text-grey uppercase text-sm sm:text-base">
                     {detail.key}
                   </div>

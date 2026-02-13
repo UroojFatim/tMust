@@ -49,9 +49,8 @@ export default function CartItems() {
   const getRowKey = (item: CartItem) => {
     if (item.cart_item_id) return item.cart_item_id;
 
-    const size = (item.product_size ?? item.size ?? "no-size") || "no-size";
-    const color =
-      (item.product_color ?? item.color ?? "no-color") || "no-color";
+    const size = ((item.product_size ?? item.size ?? "no-size") || "no-size").toLowerCase();
+    const color = ((item.product_color ?? item.color ?? "no-color") || "no-color").toLowerCase();
 
     return `${item.product_id}__${size}__${color}`;
   };
@@ -160,16 +159,41 @@ export default function CartItems() {
 
   // ✅ delete by unique row (using row_key for proper variation handling)
   async function deleteProduct(rowKey: string) {
-    const res = await fetch("/api/cart", {
-      method: "DELETE",
-      body: JSON.stringify({
-        user_id: userId,
-        row_key: rowKey,
-      }),
-    });
-    setState(!state);
-    // ✅ Refresh cart context to update header count
-    await refreshCart();
+    try {
+      console.log("[DELETE] Attempting to delete with row_key:", rowKey);
+      const res = await fetch("/api/cart", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          row_key: rowKey,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("[DELETE] API error:", errorText);
+        alert("Failed to delete product from cart");
+        return;
+      }
+
+      const data = await res.json();
+      console.log("[DELETE] Response from API:", data);
+
+      if (data.result?.deletedCount === 0) {
+        console.warn("[DELETE] No items were deleted. Check if row_key matches.");
+        alert("Product not found in cart. Please refresh the page.");
+        return;
+      }
+
+      console.log("Product deleted successfully");
+      setState(!state);
+      // ✅ Refresh cart context to update header count
+      await refreshCart();
+    } catch (error) {
+      console.error("Delete product error:", error);
+      alert("Error deleting product from cart");
+    }
   }
 
   const totalQuantity = useMemo(() => {
@@ -193,7 +217,7 @@ export default function CartItems() {
 
   return (
     <Wrapper>
-      <section className="px-3 sm:px-6 md:px-8 lg:px-12 my-28 lg:my-32">
+      <section className="px-2 my-28 lg:my-32">
         <h1 className="font-bold text-xl sm:text-2xl lg:text-3xl">
           Shopping Cart
         </h1>
@@ -250,7 +274,10 @@ export default function CartItems() {
                         </div>
 
                         <button
-                          onClick={() => deleteProduct(key)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            deleteProduct(key);
+                          }}
                           aria-label="Remove item"
                           className="flex-shrink-0 p-1 hover:bg-gray-100 rounded transition"
                         >
@@ -262,11 +289,11 @@ export default function CartItems() {
                         {titleCase(item.product_category)}
                       </h2>
 
-                      <div className="mt-4 sm:mt-6 text-base sm:text-lg flex items-center justify-between">
+                      <div className="mt-2 sm:mt-4 text-base sm:text-lg flex items-center justify-between">
                         <div className="flex flex-col gap-1">
-                          <span className="text-sm sm:text-md font-bold">
+                          <span className="text-xl font-bold">
                             {" "}
-                            ${price.toFixed(2)}
+                            ${price}
                           </span>
                         </div>
 
@@ -344,15 +371,16 @@ export default function CartItems() {
               </div>
               <div className="text-base sm:text-lg">
                 Sub Total:{" "}
-                <span className="font-bold">${totalSubtotal.toFixed(2)}</span>
+                <span className="font-bold">${totalSubtotal}</span>
               </div>
 
               <Button
-                onClick={handleCheckout}
-                disabled={checkoutLoading}
-                className="text-white w-full py-3 text-sm sm:text-base hover:bg-blue-700 transition"
+                // onClick={handleCheckout}
+                // disabled={checkoutLoading}
+                className="text-white w-full py-3 text-sm sm:text-base"
               >
-                {checkoutLoading ? "Processing..." : "Proceed To Checkout"}
+                {/* {checkoutLoading ? "Processing..." : "Proceed To Checkout"} */}
+                Proceed To Checkout
               </Button>
             </div>
           </div>
