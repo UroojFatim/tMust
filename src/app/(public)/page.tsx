@@ -77,7 +77,9 @@ const getAllProducts = async () => {
   const db = await getDatabase();
   const products = await db
     .collection("inventory_products")
-    .find({})
+    .find({
+      $or: [{ displayOnWebsite: { $exists: false } }, { displayOnWebsite: true }],
+    })
     .sort({ createdAt: -1 })
     .toArray();
   return serializeProducts(products);
@@ -88,11 +90,18 @@ const getProductsByCollection = async (collectionSlug: string) => {
   const products = await db
     .collection("inventory_products")
     .find({
-      $or: [
-        { collectionSlug },
-        { collectionSlug: collectionSlug.toLowerCase() },
-        { collection: collectionSlug },
-        { collection: new RegExp(collectionSlug, "i") },
+      $and: [
+        {
+          $or: [{ displayOnWebsite: { $exists: false } }, { displayOnWebsite: true }],
+        },
+        {
+          $or: [
+            { collectionSlug },
+            { collectionSlug: collectionSlug.toLowerCase() },
+            { collection: collectionSlug },
+            { collection: new RegExp(collectionSlug, "i") },
+          ],
+        },
       ],
     })
     .sort({ createdAt: -1 })
