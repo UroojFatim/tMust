@@ -3,6 +3,15 @@ import { ObjectId } from "mongodb";
 import { getDatabase } from "@/lib/mongodb";
 import { getInventorySession } from "@/lib/inventoryAuth";
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -52,6 +61,11 @@ export async function PUT(
 
   const body = await request.json();
   const { _id, ...updateData } = body;
+
+  // Auto-generate slug from title if title is being updated and slug is not provided
+  if (updateData.title && !updateData.slug) {
+    updateData.slug = slugify(updateData.title);
+  }
 
   const db = await getDatabase();
   const result = await db
