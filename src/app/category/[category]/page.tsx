@@ -21,7 +21,9 @@ export default async function Page({ params }: { params: Promise<{ category: str
   const db = await getDatabase();
   const products = await db
     .collection("inventory_products")
-    .find({})
+    .find({
+      $or: [{ displayOnWebsite: { $exists: false } }, { displayOnWebsite: true }],
+    })
     .sort({ createdAt: -1 })
     .toArray();
 
