@@ -13,7 +13,9 @@ async function getStyleData(slug: string) {
       db.collection("inventory_styles").find({}).sort({ name: 1 }).toArray(),
       db
         .collection("inventory_products")
-        .find({})
+        .find({
+          $or: [{ displayOnWebsite: { $exists: false } }, { displayOnWebsite: true }],
+        })
         .sort({ createdAt: -1 })
         .toArray(),
     ]);
