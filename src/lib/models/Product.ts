@@ -41,6 +41,7 @@ const ProductSchema = new Schema(
     collectionSlug: { type: String },
     images: [ImageSchema],
     variants: [VariantSchema],
+    displayOnWebsite: { type: Boolean, default: true },
   },
   {
     collection: "inventory_products",
