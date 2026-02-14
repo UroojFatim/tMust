@@ -4,6 +4,7 @@ import logo from "/public/MustLogo.png";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Sheet,
   SheetContent,
@@ -22,6 +23,7 @@ interface NavItem {
 }
 
 const Header = () => {
+  const router = useRouter();
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<any[]>([]);
@@ -29,6 +31,14 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [styles, setStyles] = useState<NavItem[]>([]);
   const [collections, setCollections] = useState<NavItem[]>([]);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  const handleNavigate = (href: string) => {
+    setIsSheetOpen(false);
+    setTimeout(() => {
+      router.push(href);
+    }, 100);
+  };
 
   const getProductImage = (product: any) => {
     const img = product?.images?.[0];
@@ -226,7 +236,7 @@ const Header = () => {
         <div className="flex items-center justify-between py-4 lg:py-5">
           {/* LEFT: Hamburger + Logo */}
           <div className="flex items-center gap-3">
-            <Sheet>
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger aria-label="Open menu" className="p-2">
                 <Menu className="h-6 w-6 text-black" />
               </SheetTrigger>
@@ -247,12 +257,12 @@ const Header = () => {
 
                 <nav className="mt-8 space-y-6">
                   {/* All Products Link */}
-                  <Link
-                    href="/all-products"
-                    className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3"
+                  <button
+                    onClick={() => handleNavigate("/all-products")}
+                    className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 w-full text-left"
                   >
                     All Products
-                  </Link>
+                  </button>
 
                   {/* Styles Section */}
                   {/* {styles.length > 0 && (
@@ -284,12 +294,12 @@ const Header = () => {
                       <ul className="flex flex-col gap-2">
                         {collections.map((item) => (
                           <li key={item.href}>
-                            <Link
-                              href={item.href}
-                              className="block py-1.5 text-base text-gray-700 hover:text-sky-600 transition-colors"
+                            <button
+                              onClick={() => handleNavigate(item.href)}
+                              className="block py-1.5 text-base text-gray-700 hover:text-sky-600 transition-colors w-full text-left"
                             >
                               {item.label}
-                            </Link>
+                            </button>
                           </li>
                         ))}
                       </ul>

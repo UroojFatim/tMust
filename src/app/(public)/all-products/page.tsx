@@ -8,7 +8,9 @@ async function getAllProducts() {
     const db = await getDatabase();
     const products = await db
       .collection("inventory_products")
-      .find({})
+      .find({
+        $or: [{ displayOnWebsite: { $exists: false } }, { displayOnWebsite: true }],
+      })
       .sort({ createdAt: -1 })
       .toArray();
 

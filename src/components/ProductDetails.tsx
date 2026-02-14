@@ -83,7 +83,9 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
     const images: any[] = [];
     variants.forEach((variant: any) => {
       if (variant.images && Array.isArray(variant.images)) {
-        images.push(...variant.images);
+        // Only include images with valid URLs
+        const validImages = variant.images.filter((img: any) => img?.url && img.url.trim() !== "");
+        images.push(...validImages);
       }
     });
     return images;
@@ -308,23 +310,25 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
           {/* Thumbnails */}
           <div className="flex lg:flex-col order-2 lg:order-1 gap-2 overflow-x-auto lg:overflow-y-auto lg:w-24 lg:max-h-[550px] xl:max-h-[950px]">
             {allProductImages?.map((_imageObj: any, index: number) => (
-              <button
-                key={_imageObj?.url || index}
-                onClick={() => setSelectedImageIndex(index)}
-                className="flex-shrink-0"
-              >
-                <Image
-                  src={_imageObj.url}
-                  alt={_imageObj.alt || foundData.title || "Product image"}
-                  width={100}
-                  height={100}
-                  className={`rounded transition-all w-20 h-28 lg:w-24 lg:h-32 object-cover ${
-                    selectedImageIndex === index
-                      ? "ring-2 ring-gray-900"
-                      : "opacity-60 hover:opacity-100"
-                  }`}
-                />
-              </button>
+              _imageObj?.url && _imageObj.url.trim() !== "" && (
+                <button
+                  key={_imageObj?.url || index}
+                  onClick={() => setSelectedImageIndex(index)}
+                  className="flex-shrink-0"
+                >
+                  <Image
+                    src={_imageObj.url}
+                    alt={_imageObj.alt || foundData.title || "Product image"}
+                    width={100}
+                    height={100}
+                    className={`rounded transition-all w-20 h-28 lg:w-24 lg:h-32 object-cover ${
+                      selectedImageIndex === index
+                        ? "ring-2 ring-gray-900"
+                        : "opacity-60 hover:opacity-100"
+                    }`}
+                  />
+                </button>
+              )
             ))}
           </div>
 
