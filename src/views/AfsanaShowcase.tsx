@@ -53,7 +53,8 @@ const AfsanaShowcase = () => {
               >
                 From Kalaam Collection
               </motion.h2>
-              <p className="max-w-md text-sm leading-7 text-[#80726b] sm:text-base">
+              {/* CHANGED: #80726b (~4.0:1) -> #5f5048 (~6:1) to pass WCAG AA contrast */}
+              <p className="max-w-md text-sm leading-7 text-[#5f5048] sm:text-base">
                 Minimal refined detailing with digitally designed silk dupattas
                 featuring poetic script and artistic motifs.
               </p>

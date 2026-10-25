@@ -24,13 +24,17 @@ export default function ImageSection({
   return (
     <div className="relative w-full h-screen overflow-hidden">
       {/* Mobile */}
+      {/* CHANGED: removed `priority` (this section is below the fold) so the image
+          lazy-loads instead of being force-preloaded, and dropped quality 100 -> 70
+          to cut delivered bytes. This is the main fix for the 28 MB payload /
+          render-blocking preloads on the homepage. */}
       <Image
         src={mobileSrc}
         alt={alt}
         fill
-        priority
+        loading="lazy"
         sizes="100vw"
-        quality={100}
+        quality={70}
         className="object-cover object-[center_30%] md:hidden block"
       />
 
@@ -39,9 +43,9 @@ export default function ImageSection({
         src={desktopSrc}
         alt={alt}
         fill
-        priority
-        sizes="100vw" // ✅ FIXED
-        quality={100} // prevents compression blur
+        loading="lazy"
+        sizes="100vw"
+        quality={70}
         className="object-cover object-[center_10%] hidden md:block"
       />
 

@@ -39,3 +39,8 @@ next-env.d.ts
 # clerk configuration (can include secrets)
 /.clerk/
 config.bat
+
+# media optimizer output (scripts/optimize-*.mjs)
+/.image-optim-backup/
+/.video-optim-backup/
+**/.optimized/

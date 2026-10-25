@@ -154,13 +154,15 @@ const Header = () => {
           autoFocus
         />
         <button
+          type="button"
           onClick={() => {
             setShowSearch(false);
             setSearchQuery("");
           }}
-          className="p-1 hover:bg-gray-100 rounded"
+          aria-label="Close search"
+          className="flex h-9 w-9 items-center justify-center rounded hover:bg-gray-100"
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
@@ -247,11 +249,13 @@ const Header = () => {
                   Browse our collections and styles
                 </SheetDescription>
                 <div className="flex items-center gap-2 mt-2">
+                  {/* CHANGED: no priority (inside a closed menu) + sizes so it never
+                      pulls a large candidate */}
                   <Image
                     src={logo}
                     alt="MUST"
+                    sizes="80px"
                     className="h-12 w-auto object-contain"
-                    priority
                   />
                 </div>
 
@@ -309,12 +313,16 @@ const Header = () => {
               </SheetContent>
             </Sheet>
 
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex items-center" aria-label="MUST home">
+              {/* CHANGED: sizes="96px" so next/image serves a ~96px candidate
+                  instead of the w=828 (188 KB) variant that was the LCP element */}
               <Image
                 src={logo}
                 alt="MUST"
+                sizes="96px"
                 className="h-14 w-auto object-contain"
                 priority
+                fetchPriority="high"
               />
             </Link>
           </div>
@@ -400,7 +408,8 @@ const Header = () => {
               )}
             </div>
 
-            <div className="relative h-10 w-10 rounded-full flex justify-center items-center text-brand-navy hover:text-brand-navy/70 transition">
+            {/* CHANGED: removed fixed h-10/w-10 so CartButton keeps its 44x44 touch target */}
+            <div className="relative flex items-center justify-center text-brand-navy transition hover:text-brand-navy/70">
               <CartButton />
             </div>
           </div>
