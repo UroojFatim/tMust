@@ -1,0 +1,41 @@
+# Normalize line endings across the team.
+# Git stores text as LF and checks out the platform-native ending.
+# This prevents the whole-repo CRLF/LF "phantom diff" churn that can hide
+# malicious changes (e.g. payloads appended after long whitespace runs).
+* text=auto
+
+# Force LF in the repo for source & config so diffs are honest and
+# cross-platform contributors don't rewrite every line.
+*.ts    text eol=lf
+*.tsx   text eol=lf
+*.js    text eol=lf
+*.jsx   text eol=lf
+*.mjs   text eol=lf
+*.cjs   text eol=lf
+*.json  text eol=lf
+*.css   text eol=lf
+*.scss  text eol=lf
+*.html  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.txt   text eol=lf
+*.env   text eol=lf
+
+# Treat real binary assets as binary (no EOL conversion, no text diff).
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.svg   binary
+*.woff   binary
+*.woff2  binary
+*.eot    binary
+*.ttf    binary
+*.otf    binary
+*.mp4    binary
+*.webm   binary
+*.mov    binary
+*.pdf    binary
