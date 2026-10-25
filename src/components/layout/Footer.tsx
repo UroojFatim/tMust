@@ -27,8 +27,14 @@ const Footer = () => {
               href={"https://www.instagram.com/mustt_studio/"}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Follow MUST on Instagram (opens in a new tab)"
+              className="inline-flex h-11 w-11 items-center justify-center"
             >
-              <Instagram className="w-5 h-5 sm:w-6 sm:h-6 cursor-pointer hover:opacity-70 transition-opacity" />
+              {/* CHANGED: aria-label gives the icon-only link a name; 44px hit area */}
+              <Instagram
+                className="w-5 h-5 sm:w-6 sm:h-6 hover:opacity-70 transition-opacity"
+                aria-hidden="true"
+              />
             </Link>
           </div>
           <div className="w-full flex items-center gap-3  text-grey">
