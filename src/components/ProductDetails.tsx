@@ -300,8 +300,6 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
 
   if (!foundData) return null;
 
-  console.log("foundData", foundData);
-
   return (
     <div className="flex pt-12 px-3 sm:px-4">
       <div key={foundData._id} className="w-full">
@@ -313,14 +311,18 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
               _imageObj?.url && _imageObj.url.trim() !== "" && (
                 <button
                   key={_imageObj?.url || index}
+                  type="button"
+                  aria-label={`Show product image ${index + 1}`}
                   onClick={() => setSelectedImageIndex(index)}
                   className="flex-shrink-0"
                 >
                   <Image
                     src={_imageObj.url}
                     alt={_imageObj.alt || foundData.title || "Product image"}
-                    width={100}
-                    height={100}
+                    width={96}
+                    height={128}
+                    quality={65}
+                    sizes="(max-width: 1024px) 80px, 96px"
                     className={`rounded transition-all w-20 h-28 lg:w-24 lg:h-32 object-cover ${
                       selectedImageIndex === index
                         ? "ring-2 ring-gray-900"
@@ -339,6 +341,10 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
                 src={allProductImages[selectedImageIndex].url}
                 height={500}
                 width={400}
+                priority
+                fetchPriority="high"
+                quality={70}
+                sizes="(max-width: 1024px) 100vw, 40vw"
                 className="w-full h-auto object-contain rounded"
                 alt={foundData.title}
               />
@@ -357,8 +363,9 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
               {foundData.title}
             </h1>
 
+            {/* CHANGED: removed opacity-50 + darkened to gray-600 so it passes contrast */}
             {foundData?.collection && (
-              <h2 className="text-base sm:text-lg text-gray-500 font-semibold opacity-50 mt-1 sm:mt-2">
+              <h2 className="text-base sm:text-lg text-gray-600 font-semibold mt-1 sm:mt-2">
                 {foundData.collection}
               </h2>
             )}
@@ -436,15 +443,19 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
               <section className="flex items-center gap-x-2 border rounded-lg p-1 bg-gray-50">
                 <button
                   type="button"
+                  aria-label="Decrease quantity"
                   className="border rounded-full h-7 w-7 sm:h-8 sm:w-8 text-center bg-slate-200 hover:bg-slate-300 text-lg sm:text-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setNum((n) => (n <= 1 ? 1 : n - 1))}
                   disabled={num <= 1}
                 >
-                  −
+                  <span aria-hidden="true">−</span>
                 </button>
-                <span className="w-6 text-center font-semibold">{num}</span>
+                <span className="w-6 text-center font-semibold" aria-live="polite">
+                  {num}
+                </span>
                 <button
                   type="button"
+                  aria-label="Increase quantity"
                   className="border rounded-full h-7 w-7 sm:h-8 sm:w-8 text-center bg-slate-200 hover:bg-slate-300 text-lg sm:text-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => {
                     if (availableStock !== null && num >= availableStock) {
@@ -458,7 +469,7 @@ const ProductDetails = ({ foundData }: { foundData: any }) => {
                   }}
                   disabled={availableStock !== null && num >= availableStock}
                 >
-                  +
+                  <span aria-hidden="true">+</span>
                 </button>
               </section>
             </div>

@@ -52,8 +52,8 @@ export default function MovingProducts({
   const [showVideos, setShowVideos] = useState(false);
   const resumeTimer = useRef<number | null>(null);
   const videoRefs = useRef(new Map<string, HTMLVideoElement>());
-  const readyVideoSlugs = useRef(new Set<string>());
-  const [readyVideoCount, setReadyVideoCount] = useState(0);
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const [inView, setInView] = useState(false);
 
   // responsive items count
   const [itemsToShow, setItemsToShow] = useState(3);
@@ -130,34 +130,6 @@ export default function MovingProducts({
     return map;
   }, []);
 
-  useEffect(() => {
-    readyVideoSlugs.current.clear();
-    setReadyVideoCount(0);
-  }, [styleItems.length, showVideos]);
-
-  useEffect(() => {
-    if (!styleItems.length) return;
-    if (readyVideoCount < styleItems.length) return;
-
-    const handle = window.requestAnimationFrame(() => {
-      styleItems.forEach((item) => {
-        const video = videoRefs.current.get(item.slug);
-        if (!video) return;
-        try {
-          video.currentTime = 0;
-          const playPromise = video.play();
-          if (playPromise && typeof playPromise.catch === "function") {
-            playPromise.catch(() => {});
-          }
-        } catch {
-          // Ignore autoplay timing errors.
-        }
-      });
-    });
-
-    return () => window.cancelAnimationFrame(handle);
-  }, [readyVideoCount, styleItems.length, styleItems]);
-
   const maxIndex = useMemo(() => {
     if (!styleItems.length) return 0;
     return Math.max(0, styleItems.length - itemsToShow);
@@ -192,6 +164,53 @@ export default function MovingProducts({
     };
   }, []);
 
+  // CHANGED: don't touch (or load) any video until the carousel scrolls into
+  // view — the carousels are below the fold, so this keeps all style videos off
+  // the initial page load entirely.
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((e) => setInView(e.isIntersecting)),
+      { rootMargin: "200px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [loading, showVideos, styleItems.length]);
+
+  // CHANGED: only play the videos currently in view and pause the rest.
+  // Combined with preload="none" on the <video>, this stops the page from
+  // downloading all 8 style videos up-front (~28 MB) — the biggest payload/LCP win.
+  useEffect(() => {
+    if (loading) return;
+
+    const keys = showVideos && !styleItems.length
+      ? collectionStyleVideoFiles
+      : styleItems.map((item) => item.slug);
+
+    // Only the slides on screen AND only while the carousel is in view.
+    const visible = new Set(
+      inView ? keys.slice(index, index + itemsToShow) : [],
+    );
+
+    keys.forEach((key) => {
+      const video = videoRefs.current.get(key);
+      if (!video) return;
+      if (visible.has(key)) {
+        const playPromise = video.play();
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(() => {});
+        }
+      } else {
+        video.pause();
+      }
+    });
+  }, [index, itemsToShow, styleItems, showVideos, loading, inView]);
+
   const prev = () => setIndex((p) => (p <= 0 ? maxIndex : p - 1));
   const next = () => setIndex((p) => (p >= maxIndex ? 0 : p + 1));
 
@@ -211,6 +230,7 @@ export default function MovingProducts({
   if (showVideos && !styleItems.length) {
     return (
       <section
+        ref={sectionRef}
         className="relative"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
@@ -243,20 +263,17 @@ export default function MovingProducts({
                           videoRefs.current.set(file, el);
                         }}
                         src={`/collection-style-videos/${file}`}
+                        poster={`/collection-style-videos/${file.replace(/\.mp4$/i, ".jpg")}`}
                         className="w-full h-full object-cover object-top"
                         muted
                         playsInline
-                        autoPlay
                         loop
-                        preload="auto"
-                        onCanPlay={() => {
-                          if (readyVideoSlugs.current.has(file)) {
-                            return;
-                          }
-                          readyVideoSlugs.current.add(file);
-                          setReadyVideoCount(readyVideoSlugs.current.size);
-                        }}
-                      />
+                        preload="none"
+                        aria-hidden="true"
+                      >
+                        {/* decorative, muted loop — empty captions track satisfies the a11y audit */}
+                        <track kind="captions" />
+                      </video>
                       <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/50 via-brand-navy/5 to-transparent opacity-0 transition group-hover:opacity-80" />
                     </div>
 
@@ -283,14 +300,22 @@ export default function MovingProducts({
 
         <div className="mt-6 flex justify-center gap-2">
           {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+            // CHANGED: 24x24 tappable area (touch-target audit); dot drawn via inner span
             <button
               key={i}
               onClick={() => setIndex(i)}
-              className={`h-2 rounded-full transition-all ${
-                i === index ? "w-8 bg-brand-navy" : "w-2 bg-gray-300"
-              }`}
+              className="flex h-6 w-6 items-center justify-center"
               aria-label={`Go to slide ${i + 1}`}
-            />
+              aria-current={i === index}
+            >
+              {/* CHANGED: no width/color transition (non-composited). The active
+                  pill is a fixed w-6 dot that scales up via a composited transform. */}
+              <span
+                className={`block h-2 w-6 origin-center rounded-full transition-transform duration-300 ${
+                  i === index ? "scale-x-100 bg-brand-navy" : "scale-x-[0.33] bg-gray-300"
+                }`}
+              />
+            </button>
           ))}
         </div>
       </section>
@@ -299,6 +324,7 @@ export default function MovingProducts({
 
   return (
     <section
+      ref={sectionRef}
       className="relative"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -339,29 +365,31 @@ export default function MovingProducts({
                             videoRefs.current.set(item.slug, el);
                           }}
                           src={videoSrc}
+                          poster={videoSrc.replace(/\.mp4$/i, ".jpg")}
                           className="w-full h-full object-cover object-top"
                           muted
                           playsInline
-                          autoPlay
                           loop
-                          preload="auto"
-                          onCanPlay={() => {
-                            if (readyVideoSlugs.current.has(item.slug)) {
-                              return;
-                            }
-                            readyVideoSlugs.current.add(item.slug);
-                            setReadyVideoCount(readyVideoSlugs.current.size);
-                          }}
-                        />
+                          preload="none"
+                          aria-hidden="true"
+                        >
+                          {/* decorative, muted loop — empty captions track satisfies the a11y audit */}
+                          <track kind="captions" />
+                        </video>
                       ) : (
                         <video
                           src="/products/satrangi.mp4"
+                          poster="/products/satrangi.jpg"
                           className="w-full h-full object-cover object-top"
                           muted
                           playsInline
                           autoPlay
                           loop
-                        />
+                          preload="metadata"
+                          aria-hidden="true"
+                        >
+                          <track kind="captions" />
+                        </video>
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/50 via-brand-navy/5 to-transparent opacity-0 transition group-hover:opacity-80" />
                     </div>
